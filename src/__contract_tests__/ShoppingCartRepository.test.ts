@@ -1,97 +1,96 @@
 import { Product } from '../Product';
 import { ShoppingCart } from '../ShoppingCart';
 import { FakeShoppingCartRepository } from '../repositories/FakeShoppingCartRepository';
-import { ShoppingCartRepository } from '../repositories/ShoppingCartRepository';
 import { PostgresShoppingCartRepository } from '../repositories/PostgresShoppingCartRepository';
-import { GenericContainer, Wait } from 'testcontainers';
+import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers';
 import { DataSource } from 'typeorm';
 import { ShoppingCartEntity } from '../entities/ShoppingCartEntity';
+import { ShoppingCartRepository } from '../repositories/ShoppingCartRepository';
 
 jest.setTimeout(30000);
 
-interface RepositorySetup {
-  repository: ShoppingCartRepository;
-  cleanup: () => Promise<void>;
-}
-
 describe('[CONTRACT] Shopping Cart Repository', () => {
-  const implementations: (() => Promise<RepositorySetup>)[] = [
-    async (): Promise<RepositorySetup> => ({
-      repository: new FakeShoppingCartRepository(),
-      cleanup: async (): Promise<void> => {}
-    }),
-    async (): Promise<RepositorySetup> => {
-      const container = await new GenericContainer('postgres:latest')
-        .withEnvironment({
-          POSTGRES_DB: 'testdb',
-          POSTGRES_USER: 'test',
-          POSTGRES_PASSWORD: 'test'
-        })
-        .withExposedPorts(5432)
-        .withWaitStrategy(Wait.forListeningPorts())
-        .start();
+  let postgresContainer: StartedTestContainer;
+  let postgresDataSource: DataSource;
+  let postgresRepository: PostgresShoppingCartRepository;
 
-      const dataSource = new DataSource({
-        type: 'postgres',
-        host: container.getHost(),
-        port: container.getMappedPort(5432),
-        username: 'test',
-        password: 'test',
-        database: 'testdb',
-        entities: [ShoppingCartEntity],
-        synchronize: true
-      });
+  beforeAll(async () => {
+    postgresContainer = await new GenericContainer('postgres:latest')
+      .withEnvironment({
+        POSTGRES_DB: 'testdb',
+        POSTGRES_USER: 'test',
+        POSTGRES_PASSWORD: 'test'
+      })
+      .withExposedPorts(5432)
+      .withWaitStrategy(
+        Wait.forAll([
+          Wait.forListeningPorts(),
+          Wait.forLogMessage('database system is ready to accept connections')
+        ])
+      )
+      .start();
 
-      await dataSource.initialize();
-      
-      return {
-        repository: new PostgresShoppingCartRepository(dataSource),
-        cleanup: async (): Promise<void> => {
-          if (dataSource.isInitialized) {
-            await dataSource.destroy();
-          }
-          await container.stop();
+    postgresDataSource = new DataSource({
+      type: 'postgres',
+      host: postgresContainer.getHost(),
+      port: postgresContainer.getMappedPort(5432),
+      username: 'test',
+      password: 'test',
+      database: 'testdb',
+      entities: [ShoppingCartEntity],
+      synchronize: true
+    });
+
+    await postgresDataSource.initialize();
+    postgresRepository = new PostgresShoppingCartRepository(postgresDataSource);
+  });
+
+  afterAll(async () => {
+    await postgresDataSource?.destroy();
+    await postgresContainer?.stop();
+  });
+
+  const repositories = [
+    {
+      name: 'FakeRepository',
+      instance: (): ShoppingCartRepository => new FakeShoppingCartRepository()
+    },
+    {
+      name: 'PostgresRepository',
+      instance: (): ShoppingCartRepository => postgresRepository,
+      beforeEach: async (): Promise<void> => {
+        if (postgresDataSource.isInitialized) {
+          await postgresDataSource.getRepository(ShoppingCartEntity).clear();
         }
-      };
+      }
     }
   ];
 
-  implementations.forEach((createRepository, index) => {
-    const implName = index === 0 ? 'FakeRepository' : 'PostgresRepository';
-    
-    describe(implName, () => {
-      let repository: ShoppingCartRepository;
-      let cleanup: () => Promise<void>;
-      
-      beforeEach(async () => {
-        const setup = await createRepository();
-        repository = setup.repository;
-        cleanup = setup.cleanup;
-      });
-
-      afterEach(async () => {
-        await cleanup();
-      });
+  repositories.forEach(({ name, instance, beforeEach: beforeEachHook }) => {
+    describe(name, () => {
+      if (beforeEachHook) {
+        beforeEach(beforeEachHook);
+      }
 
       it('returns empty products list for a new cart', async () => {
+        const repository = instance();
         const cart = new ShoppingCart(repository, 'new-cart-id');
-        
         const loadedCart = await repository.load(cart.id());
-        
         expect(loadedCart.products).toEqual([]);
       });
 
       it('saves and loads cart with a single product', async () => {
+        const repository = instance();
         const product = new Product(1, 'Test Product', 10);
         const cart = new ShoppingCart(repository, 'test-cart-id');
 
         await repository.save(cart, [product]);
-
         const loadedCart = await repository.load(cart.id());
         expect(loadedCart.products).toEqual([product]);
       });
 
       it('saves and loads cart with multiple products', async () => {
+        const repository = instance();
         const products = [
           new Product(1, 'First Product', 10),
           new Product(2, 'Second Product', 20),
@@ -100,15 +99,15 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
         const cart = new ShoppingCart(repository, 'multi-product-cart');
 
         await repository.save(cart, products);
-
         const loadedCart = await repository.load(cart.id());
         expect(loadedCart.products).toEqual(products);
       });
 
       it('maintains separate products for different carts', async () => {
+        const repository = instance();
         const product1 = new Product(1, 'Cart 1 Product', 10);
         const product2 = new Product(2, 'Cart 2 Product', 20);
-        
+
         const cart1 = new ShoppingCart(repository, 'cart-1');
         const cart2 = new ShoppingCart(repository, 'cart-2');
 
@@ -123,6 +122,7 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
       });
 
       it('updates existing cart products', async () => {
+        const repository = instance();
         const cart = new ShoppingCart(repository, 'update-cart');
         const initialProduct = new Product(1, 'Initial Product', 10);
         const updatedProducts = [
@@ -138,6 +138,7 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
       });
 
       it('preserves product data correctly', async () => {
+        const repository = instance();
         const product = new Product(1, 'Test Product', 99.99);
         const cart = new ShoppingCart(repository, 'data-preservation-cart');
 
