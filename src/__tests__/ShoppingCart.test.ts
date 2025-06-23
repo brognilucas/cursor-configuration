@@ -1,5 +1,5 @@
-import { ShoppingCart } from './ShoppingCart';
-import { Product } from './Product';
+import { ShoppingCart } from '../ShoppingCart';
+import { Product } from '../Product';
 
 describe('ShoppingCart', () => {
   it('returns empty list when no products are in cart', () => {
