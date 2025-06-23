@@ -1,5 +1,13 @@
+import { Product } from './Product';
+
 export class ShoppingCart {
-  listProducts(): unknown[] {
-    return [];
+  private products: Product[] = [];
+
+  addProduct(product: Product): void {
+    this.products.push(product);
+  }
+
+  listProducts(): Product[] {
+    return [...this.products];
   }
 } 
