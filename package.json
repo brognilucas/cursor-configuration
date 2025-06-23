@@ -9,7 +9,10 @@
     "test:watch": "jest --watch",
     "lint": "eslint . --ext .ts",
     "start": "ts-node src/index.ts",
-    "dev": "ts-node-dev --respawn src/index.ts"
+    "dev": "ts-node-dev --respawn src/index.ts",
+    "test:unit": "jest",
+    "test:contract": "TEST_TYPE=contract jest",
+    "test:all": "npm run test:unit && npm run test:contract"
   },
   "keywords": [],
   "author": "",
