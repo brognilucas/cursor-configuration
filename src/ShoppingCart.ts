@@ -3,20 +3,23 @@ import { Product } from './Product';
 import { ShoppingCartRepository } from './repositories/ShoppingCartRepository';
 
 export class ShoppingCart {
-  private _products: Product[] = [];
   private _id: string;
-  private _repository: ShoppingCartRepository;
+  private _products: Product[] = [];
 
-  constructor(repository: ShoppingCartRepository) {
-    this._id = uuid();
-    this._repository = repository;
+  constructor(private readonly _repository: ShoppingCartRepository, id?: string) {
+    this._id = id ?? uuid();
   }
 
-  addProduct(product: Product): void {
+  async addProduct(product: Product): Promise<void> {
+    const cartData = await this._repository.load(this._id);
+    this._products = cartData.products;
     this._products.push(product);
+    await this._repository.save(this, this._products);
   }
 
-  listProducts(): Product[] {
+  async listProducts(): Promise<Product[]> {
+    const cartData = await this._repository.load(this._id);
+    this._products = cartData.products;
     return [...this._products];
   }
 
@@ -25,10 +28,6 @@ export class ShoppingCart {
   }
 
   async save(): Promise<void> {
-    await this._repository.save(this);
-  }
-
-  static async load(id: string, repository: ShoppingCartRepository): Promise<ShoppingCart> {
-    return repository.load(id);
+    await this._repository.save(this, this._products);
   }
 } 
