@@ -1,9 +1,16 @@
 import { ShoppingCart } from '../ShoppingCart';
 import { Product } from '../Product';
+import { FakeShoppingCartRepository } from '../repositories/FakeShoppingCartRepository';
 
 describe('ShoppingCart', () => {
+  let repository: FakeShoppingCartRepository;
+
+  beforeEach(() => {
+    repository = new FakeShoppingCartRepository();
+  });
+
   it('returns empty list when no products are in cart', () => {
-    const cart = new ShoppingCart();
+    const cart = new ShoppingCart(repository);
 
     const products = cart.listProducts();
 
@@ -12,7 +19,7 @@ describe('ShoppingCart', () => {
 
   it('lists a single product when one product is added to cart', () => {
     const product = new Product(1, 'Test Product', 20);
-    const cart = new ShoppingCart();
+    const cart = new ShoppingCart(repository);
 
     cart.addProduct(product);
 
@@ -26,7 +33,7 @@ describe('ShoppingCart', () => {
     const product1 = new Product(1, 'First Product', 20);
     const product2 = new Product(2, 'Second Product', 30);
     const product3 = new Product(3, 'Third Product', 40);
-    const cart = new ShoppingCart();
+    const cart = new ShoppingCart(repository);
 
     cart.addProduct(product1);
     cart.addProduct(product2);
