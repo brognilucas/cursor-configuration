@@ -28,7 +28,11 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@types/pg": "^8.15.4",
     "@types/uuid": "^10.0.0",
+    "pg": "^8.16.2",
+    "testcontainers": "^11.0.3",
+    "typeorm": "^0.3.25",
     "uuid": "^11.1.0"
   }
 }
