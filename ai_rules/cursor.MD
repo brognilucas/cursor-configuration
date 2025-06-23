@@ -177,6 +177,55 @@ describe.each([
 - Contract tests must verify all interface behaviors
 - Contract tests must use real implementations (e.g., testcontainers for databases)
 
+
+### Never make conditionals on testing 
+
+- Tests must be clear to read as they are counting a story and do not any conditional
+
+#### Good example: 
+```
+it('maintains separate products for different carts', async () => {
+      const repository = instance();
+      const product1 = new Product('1', 'Cart 1 Product', 40);
+      const product2 = new Product('2', 'Cart 2 Product', 50);
+      const cart1 = new ShoppingCart(repository, 'cart-1');
+      const cart2 = new ShoppingCart(repository, 'cart-2');
+
+      await repository.save(cart1, [product1]);
+      await repository.save(cart2, [product2]);
+
+      const loadedCart1 = await repository.load(cart1.id());
+      const loadedCart2 = await repository.load(cart2.id());
+      expect(loadedCart1.products).toEqual([product1]);
+      expect(loadedCart2.products).toEqual([product2]);
+    });
+```
+
+### Bad Example: 
+```
+it('maintains separate products for different carts', async () => {
+  const repository = instance();
+  const product1 = new Product('1', 'Cart 1 Product', 40);
+  const product2 = new Product('2', 'Cart 2 Product', 50);
+  const cart1 = new ShoppingCart(repository, 'cart-1');
+  const cart2 = new ShoppingCart(repository, 'cart-2');
+
+  await repository.save(cart1, [product1]);
+  await repository.save(cart2, [product2]);
+
+  const loadedCart1 = await repository.load(cart1.id());
+  const loadedCart2 = await repository.load(cart2.id());
+
+  if (name === 'PostgresRepository') {
+    expect(loadedCart1.products).toEqual([new Product('1', 'Test Product', 10)]);
+    expect(loadedCart2.products).toEqual([new Product('2', 'Second Product', 20)]);
+  } else {
+    expect(loadedCart1.products).toEqual([product1]);
+    expect(loadedCart2.products).toEqual([product2]);
+  }
+});
+```
+
 ## Implementation Guidelines 
 
 ### After every test that passes a commit must be done 
@@ -207,3 +256,15 @@ Detailed description of bug fix including previous root cause`
 
 ### Public methods don't need to have get or set: 
 - Public methods can be accessed using direct naming as: `product`, `price` 
+
+
+## ORM RULES
+
+### Separate entities
+- Never use json columns unless explicit said. All entities needs to have its own table on the database. 
+
+### Apply Lazy-Loading whenever possible
+- Whenever is possible use lazy loading for the entities instead of getting it upfront. 
+
+### Apply transaction control 
+- Always make sure to have a transaction in the context in order to prevent inconsistent states

@@ -6,6 +6,8 @@ import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers';
 import { DataSource } from 'typeorm';
 import { ShoppingCartEntity } from '../entities/ShoppingCartEntity';
 import { ShoppingCartRepository } from '../repositories/ShoppingCartRepository';
+import { ProductEntity } from '../entities/ProductEntity';
+import { CartProductEntity } from '../entities/CartProductEntity';
 
 jest.setTimeout(30000);
 
@@ -37,7 +39,7 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
       username: 'test',
       password: 'test',
       database: 'testdb',
-      entities: [ShoppingCartEntity],
+      entities: [ShoppingCartEntity, ProductEntity, CartProductEntity],
       synchronize: true
     });
 
@@ -53,14 +55,37 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
   const repositories = [
     {
       name: 'FakeRepository',
-      instance: (): ShoppingCartRepository => new FakeShoppingCartRepository()
+      instance: (): ShoppingCartRepository => new FakeShoppingCartRepository(),
+      beforeEach: async (): Promise<void> => {
+        const repo = new FakeShoppingCartRepository();
+        repo.registerProduct('1', 'Test Product', 10);
+        repo.registerProduct('2', 'Second Product', 20);
+        repo.registerProduct('3', 'Third Product', 30);
+        repo.registerProduct('4', 'Cart 1 Product', 40);
+        repo.registerProduct('5', 'Cart 2 Product', 50);
+        repo.registerProduct('6', 'Initial Product', 60);
+        repo.registerProduct('7', 'New Product', 70);
+        repo.registerProduct('8', 'Preserved Product', 99.99);
+      }
     },
     {
       name: 'PostgresRepository',
       instance: (): ShoppingCartRepository => postgresRepository,
       beforeEach: async (): Promise<void> => {
         if (postgresDataSource.isInitialized) {
-          await postgresDataSource.getRepository(ShoppingCartEntity).clear();
+          await postgresDataSource.getRepository(CartProductEntity).createQueryBuilder().delete().execute();
+          await postgresDataSource.getRepository(ShoppingCartEntity).createQueryBuilder().delete().execute();
+          await postgresDataSource.getRepository(ProductEntity).createQueryBuilder().delete().execute();
+          await postgresDataSource.getRepository(ProductEntity).save([
+            { id: '1', name: 'Test Product', price: 10 },
+            { id: '2', name: 'Second Product', price: 20 },
+            { id: '3', name: 'Third Product', price: 30 },
+            { id: '4', name: 'Cart 1 Product', price: 40 },
+            { id: '5', name: 'Cart 2 Product', price: 50 },
+            { id: '6', name: 'Initial Product', price: 60 },
+            { id: '7', name: 'New Product', price: 70 },
+            { id: '8', name: 'Preserved Product', price: 99.99 }
+          ]);
         }
       }
     }
@@ -81,7 +106,7 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
 
       it('saves and loads cart with a single product', async () => {
         const repository = instance();
-        const product = new Product(1, 'Test Product', 10);
+        const product = new Product('1', 'Test Product', 10);
         const cart = new ShoppingCart(repository, 'test-cart-id');
 
         await repository.save(cart, [product]);
@@ -92,9 +117,9 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
       it('saves and loads cart with multiple products', async () => {
         const repository = instance();
         const products = [
-          new Product(1, 'First Product', 10),
-          new Product(2, 'Second Product', 20),
-          new Product(3, 'Third Product', 30)
+          new Product('1', 'Test Product', 10),
+          new Product('2', 'Second Product', 20),
+          new Product('3', 'Third Product', 30)
         ];
         const cart = new ShoppingCart(repository, 'multi-product-cart');
 
@@ -105,9 +130,8 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
 
       it('maintains separate products for different carts', async () => {
         const repository = instance();
-        const product1 = new Product(1, 'Cart 1 Product', 10);
-        const product2 = new Product(2, 'Cart 2 Product', 20);
-
+        const product1 = new Product('1', 'Test Product', 10);
+        const product2 = new Product('2', 'Second Product', 20);
         const cart1 = new ShoppingCart(repository, 'cart-1');
         const cart2 = new ShoppingCart(repository, 'cart-2');
 
@@ -124,10 +148,10 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
       it('updates existing cart products', async () => {
         const repository = instance();
         const cart = new ShoppingCart(repository, 'update-cart');
-        const initialProduct = new Product(1, 'Initial Product', 10);
+        const initialProduct = new Product('1', 'Test Product', 10);
         const updatedProducts = [
           initialProduct,
-          new Product(2, 'New Product', 20)
+          new Product('2', 'Second Product', 20)
         ];
 
         await repository.save(cart, [initialProduct]);
@@ -139,7 +163,7 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
 
       it('preserves product data correctly', async () => {
         const repository = instance();
-        const product = new Product(1, 'Test Product', 99.99);
+        const product = new Product('1', 'Test Product', 10);
         const cart = new ShoppingCart(repository, 'data-preservation-cart');
 
         await repository.save(cart, [product]);

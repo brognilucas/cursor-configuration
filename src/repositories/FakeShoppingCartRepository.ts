@@ -2,38 +2,38 @@ import { Product } from '../Product';
 import { ShoppingCart } from '../ShoppingCart';
 import { CartData, ShoppingCartRepository } from './ShoppingCartRepository';
 
-interface StoredCart {
-  id: string;
-  products: Array<{
-    id: number;
-    name: string;
-    price: number;
-  }>;
-}
-
 export class FakeShoppingCartRepository implements ShoppingCartRepository {
-  private _carts: Map<string, StoredCart> = new Map();
+  private _carts: Set<string> = new Set();
+  private _cartProducts: Map<string, { product_id: string; quantity: number }[]> = new Map();
+  private _products: Map<string, { name: string; price: number }> = new Map();
+
+  registerProduct(id: string, name: string, price: number): void {
+    this._products.set(id, { name, price });
+  }
 
   async save(cart: ShoppingCart, products: Product[]): Promise<void> {
-    this._carts.set(cart.id(), {
-      id: cart.id(),
-      products: products.map(product => ({
-        id: product.id(),
-        name: product.name(),
-        price: product.price()
-      }))
+    this._carts.add(cart.id());
+    this._cartProducts.set(
+      cart.id(),
+      products.map(product => ({ product_id: product.id(), quantity: 1 }))
+    );
+    // Register products on save for convenience (optional, can be removed if explicit registration is preferred)
+    products.forEach(product => {
+      if (!this._products.has(product.id())) {
+        this.registerProduct(product.id(), product.name(), product.price());
+      }
     });
   }
 
   async load(id: string): Promise<CartData> {
-    const storedCart = this._carts.get(id);
-    if (!storedCart) {
+    if (!this._carts.has(id)) {
       return { id, products: [] };
     }
-
-    return {
-      id: storedCart.id,
-      products: storedCart.products.map(p => new Product(p.id, p.name, p.price))
-    };
+    const cartProducts = this._cartProducts.get(id) || [];
+    const products = cartProducts.map(cp => {
+      const prod = this._products.get(cp.product_id) || { name: '', price: 0 };
+      return new Product(cp.product_id, prod.name, prod.price);
+    });
+    return { id, products };
   }
 } 

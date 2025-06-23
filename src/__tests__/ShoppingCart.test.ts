@@ -18,7 +18,7 @@ describe('ShoppingCart', () => {
   });
 
   it('lists a single product when one product is added to cart', async () => {
-    const product = new Product(1, 'Test Product', 20);
+    const product = new Product('1', 'Test Product', 20);
     const cart = new ShoppingCart(repository);
 
     await cart.addProduct(product);
@@ -30,9 +30,9 @@ describe('ShoppingCart', () => {
   });
 
   it('lists multiple products when multiple products are added to cart', async () => {
-    const product1 = new Product(1, 'First Product', 20);
-    const product2 = new Product(2, 'Second Product', 30);
-    const product3 = new Product(3, 'Third Product', 40);
+    const product1 = new Product('1', 'First Product', 20);
+    const product2 = new Product('2', 'Second Product', 30);
+    const product3 = new Product('3', 'Third Product', 40);
     const cart = new ShoppingCart(repository);
 
     await cart.addProduct(product1);

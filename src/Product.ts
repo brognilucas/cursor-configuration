@@ -1,11 +1,11 @@
 export class Product {
   constructor(
-    private _id: number,
+    private _id: string,
     private _name: string,
     private _price: number
   ) {}
 
-  id(): number {
+  id(): string {
     return this._id;
   }
 

@@ -2,37 +2,46 @@ import { DataSource, Repository } from 'typeorm';
 import { Product } from '../Product';
 import { ShoppingCartRepository, CartData } from './ShoppingCartRepository';
 import { ShoppingCartEntity } from '../entities/ShoppingCartEntity';
+import { CartProductEntity } from '../entities/CartProductEntity';
 import { ShoppingCart } from '../ShoppingCart';
 
 export class PostgresShoppingCartRepository implements ShoppingCartRepository {
-  private readonly repository: Repository<ShoppingCartEntity>;
+  private readonly cartRepository: Repository<ShoppingCartEntity>;
+  private readonly cartProductRepository: Repository<CartProductEntity>;
 
   constructor(dataSource: DataSource) {
-    this.repository = dataSource.getRepository(ShoppingCartEntity);
+    this.cartRepository = dataSource.getRepository(ShoppingCartEntity);
+    this.cartProductRepository = dataSource.getRepository(CartProductEntity);
   }
 
   async save(cart: ShoppingCart, products: Product[]): Promise<void> {
-    const entity = new ShoppingCartEntity();
-    entity.id = cart.id();
-    entity.products = products.map(product => ({
-      id: product.id(),
-      name: product.name(),
-      price: product.price()
-    }));
+    let entity = await this.cartRepository.findOne({ where: { id: cart.id() } });
+    if (!entity) {
+      entity = new ShoppingCartEntity();
+      entity.id = cart.id();
+      await this.cartRepository.save(entity);
+    }
 
-    await this.repository.save(entity);
+    await this.cartProductRepository.delete({ cart_id: cart.id() });
+
+    const cartProducts = products.map(product => {
+      const cp = new CartProductEntity();
+      cp.cart_id = cart.id();
+      cp.product_id = product.id();
+      cp.quantity = 1;
+      return cp;
+    });
+    await this.cartProductRepository.save(cartProducts);
   }
 
   async load(id: string): Promise<CartData> {
-    const entity = await this.repository.findOne({ where: { id } });
-    
-    if (!entity) {
-      return { id, products: [] };
-    }
-
-    return {
-      id: entity.id,
-      products: entity.products.map(p => new Product(p.id, p.name, p.price))
-    };
+    const cartProducts = await this.cartProductRepository.find({
+      where: { cart_id: id },
+      relations: ['product']
+    });
+    const products = cartProducts.map(cp =>
+      new Product(cp.product_id, cp.product?.name || '', Number(cp.product?.price) || 0)
+    );
+    return { id, products };
   }
 } 
