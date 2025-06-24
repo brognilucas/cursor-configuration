@@ -28,7 +28,12 @@ export function createApp(
   const addItemService = new AddItemToShoppingCartService(shoppingCartRepository);
   const getProductsService = new GetProductsService(productRepository);
 
-  app.use('/shopping-carts', ShoppingCartController(getCartSummaryService, saveCartService, addItemService));
+  app.use('/shopping-carts', ShoppingCartController(
+    shoppingCartRepository,
+    getCartSummaryService,
+    saveCartService,
+    addItemService
+  ));
   app.use('/products', ProductController(getProductsService));
 
   return app;
