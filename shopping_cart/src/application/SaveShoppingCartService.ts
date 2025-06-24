@@ -1,13 +1,15 @@
 import { ShoppingCartRepository } from '../repositories/ShoppingCartRepository';
 import { ShoppingCart } from '../ShoppingCart';
 import { Product } from '../Product';
+import { SaveShoppingCartInput } from '../dto/SaveShoppingCartInput';
+import { ProductInput } from '../dto/ProductInput';
 
 export class SaveShoppingCartService {
   constructor(private readonly repository: ShoppingCartRepository) {}
 
-  async execute(cartId: string, products: { id: string; name: string; price: number }[]): Promise<void> {
+  async execute(cartId: string, input: SaveShoppingCartInput): Promise<void> {
     const cart = new ShoppingCart(this.repository, cartId);
-    const productInstances = products.map(p => new Product(p.id, p.name, p.price));
+    const productInstances = input.products.map((p: ProductInput) => new Product(p.id, p.name, p.price));
     await cart.setProducts(productInstances);
     await cart.save();
   }

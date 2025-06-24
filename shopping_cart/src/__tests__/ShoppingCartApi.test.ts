@@ -3,6 +3,8 @@ import { createApp } from '../api';
 import { FakeShoppingCartRepository } from '../repositories/FakeShoppingCartRepository';
 import { Product } from '../Product';
 import { ShoppingCart } from '../ShoppingCart';
+import { ProductInput } from '../dto/ProductInput';
+import { SaveShoppingCartInput } from '../dto/SaveShoppingCartInput';
 
 describe('ShoppingCart API', () => {
   let repository: FakeShoppingCartRepository;
@@ -18,7 +20,6 @@ describe('ShoppingCart API', () => {
     const cart = new ShoppingCart(repository, cartId);
     const product1 = new Product('1', 'Apple', 2.5);
     const product2 = new Product('2', 'Banana', 3.0);
-
     await cart.addProduct(product1);
     await cart.addProduct(product2);
 
@@ -34,21 +35,18 @@ describe('ShoppingCart API', () => {
 
   it('saves a shopping cart and retrieves it', async () => {
     const cartId = 'save-cart-test';
-    const products = [
+    const products: ProductInput[] = [
       { id: '1', name: 'Apple', price: 2.5 },
       { id: '2', name: 'Banana', price: 3.0 }
     ];
+    const input: SaveShoppingCartInput = { products };
 
-    // Save the cart
     const saveResponse = await request(app)
       .post(`/shopping-carts/${cartId}`)
-      .send({ products });
+      .send(input);
 
     expect(saveResponse.status).toBe(200);
-
-    // Retrieve the cart
     const getResponse = await request(app).get(`/shopping-carts/${cartId}`);
-
     expect(getResponse.status).toBe(200);
     expect(getResponse.body).toMatchObject({
       cartId,
@@ -63,18 +61,14 @@ describe('ShoppingCart API', () => {
 
   it('adds a new item to a shopping cart', async () => {
     const cartId = 'add-item-cart';
-    const product = { id: '3', name: 'Orange', price: 4.0 };
+    const product: ProductInput = { id: '3', name: 'Orange', price: 4.0 };
 
-    // Add the item
     const addResponse = await request(app)
       .post(`/shopping-carts/${cartId}/items`)
       .send(product);
 
     expect(addResponse.status).toBe(200);
-
-    // Retrieve the cart
     const getResponse = await request(app).get(`/shopping-carts/${cartId}`);
-
     expect(getResponse.status).toBe(200);
     expect(getResponse.body).toMatchObject({
       cartId,
