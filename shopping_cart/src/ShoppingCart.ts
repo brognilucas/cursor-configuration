@@ -30,4 +30,8 @@ export class ShoppingCart {
   async save(): Promise<void> {
     await this._repository.save(this, this._products);
   }
+
+  setProducts(products: Product[]): void {
+    this._products = products;
+  }
 } 

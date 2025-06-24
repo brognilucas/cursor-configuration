@@ -31,4 +31,33 @@ describe('ShoppingCart API', () => {
       totalPrice: 5.5
     });
   });
+
+  it('saves a shopping cart and retrieves it', async () => {
+    const cartId = 'save-cart-test';
+    const products = [
+      { id: '1', name: 'Apple', price: 2.5 },
+      { id: '2', name: 'Banana', price: 3.0 }
+    ];
+
+    // Save the cart
+    const saveResponse = await request(app)
+      .post(`/shopping-carts/${cartId}`)
+      .send({ products });
+
+    expect(saveResponse.status).toBe(200);
+
+    // Retrieve the cart
+    const getResponse = await request(app).get(`/shopping-carts/${cartId}`);
+
+    expect(getResponse.status).toBe(200);
+    expect(getResponse.body).toMatchObject({
+      cartId,
+      totalItems: 2,
+      totalPrice: 5.5,
+      products: [
+        { id: '1', name: 'Apple', price: 2.5 },
+        { id: '2', name: 'Banana', price: 3.0 }
+      ]
+    });
+  });
 }); 
