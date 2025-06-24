@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1750746020225" clover="3.2.0">
+  <project timestamp="1750746020225" name="All files">
+    <metrics statements="40" coveredstatements="39" conditionals="10" coveredconditionals="7" methods="16" coveredmethods="15" elements="66" coveredelements="61" complexity="0" loc="40" ncloc="40" packages="2" files="3" classes="3"/>
+    <package name="src">
+      <metrics statements="21" coveredstatements="20" conditionals="4" coveredconditionals="3" methods="9" coveredmethods="8"/>
+      <file name="Product.ts" path="/Users/lucas.brogni/projects/cursor-config/shopping_cart/src/Product.ts">
+        <metrics statements="7" coveredstatements="7" conditionals="0" coveredconditionals="0" methods="4" coveredmethods="4"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="3" count="11" type="stmt"/>
+        <line num="4" count="11" type="stmt"/>
+        <line num="5" count="11" type="stmt"/>
+        <line num="9" count="18" type="stmt"/>
+        <line num="13" count="4" type="stmt"/>
+        <line num="17" count="4" type="stmt"/>
+      </file>
+      <file name="ShoppingCart.ts" path="/Users/lucas.brogni/projects/cursor-config/shopping_cart/src/ShoppingCart.ts">
+        <metrics statements="14" coveredstatements="13" conditionals="4" coveredconditionals="3" methods="5" coveredmethods="4"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="7" count="3" type="stmt"/>
+        <line num="9" count="3" type="stmt"/>
+        <line num="10" count="3" type="cond" truecount="3" falsecount="1"/>
+        <line num="14" count="4" type="stmt"/>
+        <line num="15" count="4" type="stmt"/>
+        <line num="16" count="4" type="stmt"/>
+        <line num="17" count="4" type="stmt"/>
+        <line num="21" count="3" type="stmt"/>
+        <line num="22" count="3" type="stmt"/>
+        <line num="23" count="3" type="stmt"/>
+        <line num="27" count="8" type="stmt"/>
+        <line num="31" count="0" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.repositories">
+      <metrics statements="19" coveredstatements="19" conditionals="6" coveredconditionals="4" methods="7" coveredmethods="7"/>
+      <file name="FakeShoppingCartRepository.ts" path="/Users/lucas.brogni/projects/cursor-config/shopping_cart/src/repositories/FakeShoppingCartRepository.ts">
+        <metrics statements="19" coveredstatements="19" conditionals="6" coveredconditionals="4" methods="7" coveredmethods="7"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="6" count="3" type="stmt"/>
+        <line num="7" count="3" type="stmt"/>
+        <line num="8" count="3" type="stmt"/>
+        <line num="11" count="4" type="stmt"/>
+        <line num="15" count="4" type="stmt"/>
+        <line num="16" count="4" type="stmt"/>
+        <line num="18" count="7" type="stmt"/>
+        <line num="21" count="4" type="stmt"/>
+        <line num="22" count="7" type="cond" truecount="1" falsecount="0"/>
+        <line num="23" count="4" type="stmt"/>
+        <line num="29" count="7" type="cond" truecount="1" falsecount="0"/>
+        <line num="30" count="3" type="stmt"/>
+        <line num="32" count="4" type="cond" truecount="1" falsecount="1"/>
+        <line num="33" count="4" type="stmt"/>
+        <line num="34" count="7" type="cond" truecount="1" falsecount="1"/>
+        <line num="35" count="7" type="stmt"/>
+        <line num="37" count="4" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>
