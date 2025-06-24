@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Product } from '../types/Product';
-import { CartItem } from '../types/CartItem';
+import { Product } from '../../types/Product';
+import { CartItem } from '../../types/CartItem';
 
 export function useFakeCartApi() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);

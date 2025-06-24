@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Product } from '../types/Product';
+import { Product } from '../../types/Product'
 
 export function useFakeProductApi() {
   const [products, setProducts] = useState<Product[]>([]);
