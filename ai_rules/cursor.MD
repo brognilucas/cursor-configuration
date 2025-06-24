@@ -1,4 +1,3 @@
-import { Product } from '../Product';
 # Development Guidelines for Cursor  
 
 This is an overall development guideline for Cursor in order to guarantee that the AI Agent building the code will use the rules set here. 
@@ -268,3 +267,12 @@ Detailed description of bug fix including previous root cause`
 
 ### Apply transaction control 
 - Always make sure to have a transaction in the context in order to prevent inconsistent states
+
+
+## API Guidelines
+
+### If an API is already in place keep the same framework
+- If an API is already existing, never pick another framework to add new endpoints  
+
+### Confirm information about architecture / layers
+- Confirm if wants to apply hexagonal architectural, what layers would like to have implemented 
