@@ -195,4 +195,14 @@ describe('ShoppingCart API', () => {
       { id: '3', name: 'Orange', price: 4.0 }
     ]);
   });
+
+  it('creates a new cart and returns a cartId', async () => {
+    const response = await request(app)
+      .post('/shopping-carts')
+      .send();
+
+    expect(response.status).toBe(201);
+    expect(typeof response.body.cartId).toBe('string');
+    expect(response.body.cartId.length).toBeGreaterThan(0);
+  });
 }); 

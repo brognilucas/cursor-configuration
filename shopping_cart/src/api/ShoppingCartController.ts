@@ -4,6 +4,7 @@ import { SaveShoppingCartService } from '../application/SaveShoppingCartService'
 import { AddItemToShoppingCartService } from '../application/AddItemToShoppingCartService';
 import { SaveShoppingCartInput } from '../dto/SaveShoppingCartInput';
 import { ProductInput } from '../dto/ProductInput';
+import { ShoppingCart } from '../domain/ShoppingCart';
 
 export function ShoppingCartController(
   getSummaryService: GetShoppingCartSummaryService,
@@ -27,6 +28,16 @@ export function ShoppingCartController(
     const product: ProductInput = req.body;
     await addItemService.execute(req.params.cartId, product);
     res.status(200).send();
+  });
+
+  router.post('/', async (_req: Request, res: Response) => {
+    // Create a new cart with a generated ID
+    // Access repository from getSummaryService
+    // @ts-expect-error: Accessing private property for repository injection
+    const repository = getSummaryService.repository;
+    const cart = new ShoppingCart(repository);
+    await cart.save();
+    res.status(201).json({ cartId: cart.id() });
   });
 
   return router;
