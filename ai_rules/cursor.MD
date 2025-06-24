@@ -7,5 +7,7 @@ This document is now split into multiple files for clarity and maintainability. 
 - [Implementation Guidelines](./implementation_guidelines.md)
 - [API Guidelines](./api_guidelines.md)
 - [Git Guidelines](./git_guidelines.md)
+- [Frontend Guidelines](./frontend_guidelines.md)
+- [ORM Guidelines](./orm_guidelines.md)
 
 Each file contains the full content of its respective section as previously found in this document.
