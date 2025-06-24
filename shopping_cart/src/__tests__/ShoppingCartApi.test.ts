@@ -60,4 +60,29 @@ describe('ShoppingCart API', () => {
       ]
     });
   });
+
+  it('adds a new item to a shopping cart', async () => {
+    const cartId = 'add-item-cart';
+    const product = { id: '3', name: 'Orange', price: 4.0 };
+
+    // Add the item
+    const addResponse = await request(app)
+      .post(`/shopping-carts/${cartId}/items`)
+      .send(product);
+
+    expect(addResponse.status).toBe(200);
+
+    // Retrieve the cart
+    const getResponse = await request(app).get(`/shopping-carts/${cartId}`);
+
+    expect(getResponse.status).toBe(200);
+    expect(getResponse.body).toMatchObject({
+      cartId,
+      totalItems: 1,
+      totalPrice: 4.0,
+      products: [
+        { id: '3', name: 'Orange', price: 4.0 }
+      ]
+    });
+  });
 }); 
