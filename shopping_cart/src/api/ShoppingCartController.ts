@@ -1,17 +1,13 @@
 import { Request, Response, Router } from 'express';
 import { GetShoppingCartSummaryService } from '../application/GetShoppingCartSummaryService';
-import { SaveShoppingCartService } from '../application/SaveShoppingCartService';
 import { AddItemToShoppingCartService } from '../application/AddItemToShoppingCartService';
-import { SaveShoppingCartInput } from '../dto/SaveShoppingCartInput';
 import { ProductInput } from '../dto/ProductInput';
-import { ShoppingCart } from '../domain/ShoppingCart';
-import { ShoppingCartRepository } from '../repositories/ShoppingCartRepository';
+import { CreateCartService } from '../application/CreateCartService';
 
 export function ShoppingCartController(
-  shoppingCartRepository: ShoppingCartRepository,
   getSummaryService: GetShoppingCartSummaryService,
-  saveCartService: SaveShoppingCartService,
-  addItemService: AddItemToShoppingCartService
+  addItemService: AddItemToShoppingCartService,
+  createCartService: CreateCartService
 ): Router {
   const router = Router();
 
@@ -20,22 +16,15 @@ export function ShoppingCartController(
     res.json(summary);
   });
 
-  router.post('/:cartId', async (req: Request, res: Response) => {
-    const input: SaveShoppingCartInput = req.body;
-    await saveCartService.execute(req.params.cartId, input);
-    res.status(200).send();
+  router.post('/', async (_req: Request, res: Response) => {
+    const cartId = await createCartService.execute();
+    res.status(201).json({ cartId });
   });
 
   router.post('/:cartId/items', async (req: Request, res: Response) => {
     const product: ProductInput = req.body;
     await addItemService.execute(req.params.cartId, product);
     res.status(200).send();
-  });
-
-  router.post('/', async (_req: Request, res: Response) => {
-    const cart = new ShoppingCart(shoppingCartRepository);
-    await cart.save();
-    res.status(201).json({ cartId: cart.id() });
   });
 
   return router;

@@ -3,7 +3,6 @@ import { FakeShoppingCartRepository } from '../repositories/FakeShoppingCartRepo
 import { Product } from '../../domain/Product';
 import { ShoppingCart } from '../../domain/ShoppingCart';
 import { ProductInput } from '../../dto/ProductInput';
-import { SaveShoppingCartInput } from '../../dto/SaveShoppingCartInput';
 import { createApp } from '../../api';
 import { FakeProductRepository } from '../repositories/FakeProductRepository';
 
@@ -56,92 +55,6 @@ describe('ShoppingCart API', () => {
     const response = await request(app).get(`/shopping-carts/${cartId}`);
 
     expect(response.body.totalPrice).toBe(5.5);
-  });
-
-  it('saves a shopping cart and retrieves it (status)', async () => {
-    const cartId = 'save-cart-test';
-    const products: ProductInput[] = [
-      { id: '1', name: 'Apple', price: 2.5 },
-      { id: '2', name: 'Banana', price: 3.0 }
-    ];
-    const input: SaveShoppingCartInput = { products };
-
-    const saveResponse = await request(app)
-      .post(`/shopping-carts/${cartId}`)
-      .send(input);
-
-    expect(saveResponse.status).toBe(200);
-  });
-
-  it('retrieves a saved cart with correct status', async () => {
-    const cartId = 'save-cart-test';
-    const products: ProductInput[] = [
-      { id: '1', name: 'Apple', price: 2.5 },
-      { id: '2', name: 'Banana', price: 3.0 }
-    ];
-    const input: SaveShoppingCartInput = { products };
-
-    await request(app)
-      .post(`/shopping-carts/${cartId}`)
-      .send(input);
-
-    const getResponse = await request(app).get(`/shopping-carts/${cartId}`);
-
-    expect(getResponse.status).toBe(200);
-  });
-
-  it('retrieves a saved cart with correct totalItems', async () => {
-    const cartId = 'save-cart-test';
-    const products: ProductInput[] = [
-      { id: '1', name: 'Apple', price: 2.5 },
-      { id: '2', name: 'Banana', price: 3.0 }
-    ];
-    const input: SaveShoppingCartInput = { products };
-
-    await request(app)
-      .post(`/shopping-carts/${cartId}`)
-      .send(input);
-
-    const getResponse = await request(app).get(`/shopping-carts/${cartId}`);
-
-    expect(getResponse.body.totalItems).toBe(2);
-  });
-
-  it('retrieves a saved cart with correct totalPrice', async () => {
-    const cartId = 'save-cart-test';
-    const products: ProductInput[] = [
-      { id: '1', name: 'Apple', price: 2.5 },
-      { id: '2', name: 'Banana', price: 3.0 }
-    ];
-    const input: SaveShoppingCartInput = { products };
-
-    await request(app)
-      .post(`/shopping-carts/${cartId}`)
-      .send(input);
-
-    const getResponse = await request(app).get(`/shopping-carts/${cartId}`);
-
-    expect(getResponse.body.totalPrice).toBe(5.5);
-  });
-
-  it('retrieves a saved cart with correct products', async () => {
-    const cartId = 'save-cart-test';
-    const products: ProductInput[] = [
-      { id: '1', name: 'Apple', price: 2.5 },
-      { id: '2', name: 'Banana', price: 3.0 }
-    ];
-    const input: SaveShoppingCartInput = { products };
-
-    await request(app)
-      .post(`/shopping-carts/${cartId}`)
-      .send(input);
-
-    const getResponse = await request(app).get(`/shopping-carts/${cartId}`);
-
-    expect(getResponse.body.products).toEqual([
-      { id: '1', name: 'Apple', price: 2.5 },
-      { id: '2', name: 'Banana', price: 3.0 }
-    ]);
   });
 
   it('adds a new item to a shopping cart (status)', async () => {
