@@ -1,6 +1,6 @@
-import { ShoppingCart } from '../ShoppingCart';
-import { Product } from '../Product';
-import { FakeShoppingCartRepository } from './repositories/FakeShoppingCartRepository';
+import { Product } from '../../domain/Product';
+import { ShoppingCart } from '../../domain/ShoppingCart';
+import { FakeShoppingCartRepository } from '../repositories/FakeShoppingCartRepository';
 
 describe('ShoppingCart', () => {
   let repository: FakeShoppingCartRepository;

@@ -1,6 +1,6 @@
 import { ShoppingCartRepository } from '../repositories/ShoppingCartRepository';
-import { ShoppingCart } from '../ShoppingCart';
-import { Product } from '../Product';
+import { ShoppingCart } from '../domain/ShoppingCart';
+import { Product } from '../domain/Product';
 import { ProductInput } from '../dto/ProductInput';
 
 export class AddItemToShoppingCartService {

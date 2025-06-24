@@ -1,9 +1,10 @@
 import { DataSource, Repository } from 'typeorm';
-import { Product } from '../Product';
-import { ShoppingCartRepository, CartData } from './ShoppingCartRepository';
+import { Product } from '../domain/Product';
+import { ShoppingCartRepository } from './ShoppingCartRepository';
 import { ShoppingCartEntity } from '../entities/ShoppingCartEntity';
 import { CartProductEntity } from '../entities/CartProductEntity';
-import { ShoppingCart } from '../ShoppingCart';
+import { ShoppingCart } from '../domain/ShoppingCart';
+import { ShoppingCartOutput } from '../dto/ShoppingCartOutput';
 
 export class PostgresShoppingCartRepository implements ShoppingCartRepository {
   private readonly cartRepository: Repository<ShoppingCartEntity>;
@@ -34,7 +35,7 @@ export class PostgresShoppingCartRepository implements ShoppingCartRepository {
     await this.cartProductRepository.save(cartProducts);
   }
 
-  async load(id: string): Promise<CartData> {
+  async load(id: string): Promise<ShoppingCartOutput> {
     const cartProducts = await this.cartProductRepository.find({
       where: { cart_id: id },
       relations: ['product']

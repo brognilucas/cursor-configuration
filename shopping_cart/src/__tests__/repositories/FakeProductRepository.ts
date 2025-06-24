@@ -1,4 +1,4 @@
-import { Product } from '../../Product';
+import { Product } from '../../domain/Product';
 import { ProductRepository } from '../../repositories/ProductRepository';
 
 export class FakeProductRepository implements ProductRepository {

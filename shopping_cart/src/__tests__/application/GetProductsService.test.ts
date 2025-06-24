@@ -1,6 +1,6 @@
-import { GetProductsService } from '../../application/GetProductsService';
 import { FakeProductRepository } from '../repositories/FakeProductRepository';
-import { Product } from '../../Product';
+import { GetProductsService } from '../../application/GetProductsService';
+import { Product } from '../../domain/Product';
 
 describe('GetProductsService', () => {
   it('returns all products from repository', async () => {

@@ -1,5 +1,5 @@
 import { ShoppingCartRepository } from '../repositories/ShoppingCartRepository';
-import { ShoppingCart } from '../ShoppingCart';
+import { ShoppingCart } from '../domain/ShoppingCart';
 
 export interface ShoppingCartSummary {
   cartId: string;

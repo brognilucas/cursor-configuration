@@ -1,8 +1,8 @@
 import request from 'supertest';
-import { createApp } from '../api';
-import { FakeProductRepository } from './repositories/FakeProductRepository';
-import { FakeShoppingCartRepository } from './repositories/FakeShoppingCartRepository';
-import { Product } from '../Product';
+import { createApp } from '../../api';
+import { FakeProductRepository } from '../repositories/FakeProductRepository';
+import { FakeShoppingCartRepository } from '../repositories/FakeShoppingCartRepository';
+import { Product } from '../../domain/Product';
 
 describe('Product API', () => {
   let productRepository: FakeProductRepository;

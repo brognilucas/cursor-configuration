@@ -1,10 +1,11 @@
 import request from 'supertest';
-import { createApp } from '../api';
-import { FakeShoppingCartRepository } from './repositories/FakeShoppingCartRepository';
-import { Product } from '../Product';
-import { ShoppingCart } from '../ShoppingCart';
-import { ProductInput } from '../dto/ProductInput';
-import { SaveShoppingCartInput } from '../dto/SaveShoppingCartInput';
+import { FakeShoppingCartRepository } from '../repositories/FakeShoppingCartRepository';
+import { Product } from '../../domain/Product';
+import { ShoppingCart } from '../../domain/ShoppingCart';
+import { ProductInput } from '../../dto/ProductInput';
+import { SaveShoppingCartInput } from '../../dto/SaveShoppingCartInput';
+import { createApp } from '../../api';
+import { FakeProductRepository } from '../repositories/FakeProductRepository';
 
 describe('ShoppingCart API', () => {
   let repository: FakeShoppingCartRepository;
@@ -12,7 +13,7 @@ describe('ShoppingCart API', () => {
 
   beforeEach(() => {
     repository = new FakeShoppingCartRepository();
-    app = createApp(repository);
+    app = createApp(repository, new FakeProductRepository());
   });
 
   it('returns 200 status for cart summary', async () => {

@@ -1,12 +1,9 @@
-import { Product } from '../Product';
-import { ShoppingCart } from '../ShoppingCart';
+import { Product } from '../domain/Product';
+import { ShoppingCart } from '../domain/ShoppingCart';
+import { ShoppingCartOutput } from '../dto/ShoppingCartOutput';
 
-export interface CartData {
-  id: string;
-  products: Product[];
-}
 
 export interface ShoppingCartRepository {
   save(cart: ShoppingCart, products: Product[]): Promise<void>;
-  load(id: string): Promise<CartData>;
+  load(id: string): Promise<ShoppingCartOutput>;
 } 

@@ -1,6 +1,7 @@
-import { Product } from '../../Product';
-import { ShoppingCart } from '../../ShoppingCart';
-import { CartData, ShoppingCartRepository } from '../../repositories/ShoppingCartRepository';
+import { Product } from '../../domain/Product';
+import { ShoppingCart } from '../../domain/ShoppingCart';
+import { ShoppingCartOutput } from '../../dto/ShoppingCartOutput';
+import { ShoppingCartRepository } from '../../repositories/ShoppingCartRepository';
 
 export class FakeShoppingCartRepository implements ShoppingCartRepository {
   private _carts: Set<string> = new Set();
@@ -25,7 +26,7 @@ export class FakeShoppingCartRepository implements ShoppingCartRepository {
     });
   }
 
-  async load(id: string): Promise<CartData> {
+  async load(id: string): Promise<ShoppingCartOutput> {
     if (!this._carts.has(id)) {
       return { id, products: [] };
     }

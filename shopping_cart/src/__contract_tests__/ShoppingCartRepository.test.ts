@@ -1,5 +1,5 @@
-import { Product } from '../Product';
-import { ShoppingCart } from '../ShoppingCart';
+import { Product } from '../domain/Product';
+import { ShoppingCart } from '../domain/ShoppingCart';
 import { FakeShoppingCartRepository } from '../__tests__/repositories/FakeShoppingCartRepository';
 import { PostgresShoppingCartRepository } from '../repositories/PostgresShoppingCartRepository';
 import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers';
