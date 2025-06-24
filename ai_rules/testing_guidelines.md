@@ -1,10 +1,8 @@
 ## Testing Guidelines 
 
-### Test First (TDD)
-- Every new piece of code needs to have a test, meaning that when creating a new functionality TDD must be followed. 
-
 ### Test Behaviour not implementation 
 - The tests needs to cover a behaviour. 
+- Each test should test a single behaviour.
 
 #### Example of a good test: 
 
