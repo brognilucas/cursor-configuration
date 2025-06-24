@@ -1,13 +1,9 @@
 import React from 'react';
 import { ProductList } from '../components/ProductList';
 import { CartSummary } from '../components/CartSummary';
-import { useProductApi, ProductApi } from '../hooks/useProductApi';
-import { useCartApi, CartApi } from '../hooks/useCartApi';
-
-interface ProductListContainerProps {
-  productApi: ProductApi;
-  cartApi: CartApi;
-}
+import { useProductApi } from '../hooks/useProductApi';
+import { useCartApi } from '../hooks/useCartApi';
+import { ProductListContainerProps } from '../types/ProductListContainerProps';
 
 export const ProductListContainer: React.FC<ProductListContainerProps> = ({ productApi, cartApi }) => {
   const { products, loading } = useProductApi(productApi);

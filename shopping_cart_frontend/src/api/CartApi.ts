@@ -1,6 +1,6 @@
 import { Product } from '../types/Product';
 import { CartItem } from '../types/CartItem';
-import { CartApi } from '../hooks/useCartApi';
+import { CartApi } from '../types/CartApi';
 
 const API_URL = 'http://localhost:3000';
 

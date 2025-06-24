@@ -1,12 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Product } from '../types/Product';
 import { CartItem } from '../types/CartItem';
-
-export interface CartApi {
-  addToCart: (product: Product, cartId: string) => Promise<CartItem[]>;
-  getCartItems: (cartId: string) => Promise<CartItem[]>;
-  createCart: () => Promise<string>;
-}
+import { CartApi } from '../types/CartApi';
 
 export function useCartApi(api: CartApi) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);

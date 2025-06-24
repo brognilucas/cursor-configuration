@@ -1,6 +1,6 @@
 import { Product } from '../../types/Product';
 import { CartItem } from '../../types/CartItem';
-import { CartApi } from '../../hooks/useCartApi';
+import { CartApi } from '../../types/CartApi';
 
 export class FakeCartApi implements CartApi {
   private _cartItems: CartItem[] = [];

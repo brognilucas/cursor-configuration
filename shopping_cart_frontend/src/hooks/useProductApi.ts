@@ -1,16 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Product } from '../types/Product';
-
-export interface ProductApi {
-  getProducts: () => Promise<Product[]>;
-}
+import { ProductApi } from '../types/ProductApi';
 
 export function useProductApi(api: ProductApi) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.getProducts()
+    api.products()
       .then(fetchedProducts => {
         setProducts(fetchedProducts);
         setLoading(false);
