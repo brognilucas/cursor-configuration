@@ -1,6 +1,6 @@
-import { Product } from '../Product';
-import { ShoppingCart } from '../ShoppingCart';
-import { CartData, ShoppingCartRepository } from './ShoppingCartRepository';
+import { Product } from '../../Product';
+import { ShoppingCart } from '../../ShoppingCart';
+import { CartData, ShoppingCartRepository } from '../../repositories/ShoppingCartRepository';
 
 export class FakeShoppingCartRepository implements ShoppingCartRepository {
   private _carts: Set<string> = new Set();

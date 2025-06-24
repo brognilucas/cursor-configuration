@@ -1,10 +1,9 @@
 import { createApp } from './api';
-import { FakeShoppingCartRepository } from './repositories/FakeShoppingCartRepository';
+import { AppDataSource } from './config/database';
+import { PostgresShoppingCartRepository } from './repositories/PostgresShoppingCartRepository';
 
-const repository = new FakeShoppingCartRepository();
-const app = createApp(repository);
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+AppDataSource.initialize().then(() => {
+  const repository = new PostgresShoppingCartRepository(AppDataSource);
+  const app = createApp(repository);
+  app.listen(3000, () => console.log('Server running on port 3000'));
 }); 

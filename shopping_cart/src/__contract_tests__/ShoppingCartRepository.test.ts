@@ -1,6 +1,6 @@
 import { Product } from '../Product';
 import { ShoppingCart } from '../ShoppingCart';
-import { FakeShoppingCartRepository } from '../repositories/FakeShoppingCartRepository';
+import { FakeShoppingCartRepository } from '../__tests__/repositories/FakeShoppingCartRepository';
 import { PostgresShoppingCartRepository } from '../repositories/PostgresShoppingCartRepository';
 import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers';
 import { DataSource } from 'typeorm';

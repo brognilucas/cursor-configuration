@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { createApp } from '../api';
-import { FakeShoppingCartRepository } from '../repositories/FakeShoppingCartRepository';
+import { FakeShoppingCartRepository } from './repositories/FakeShoppingCartRepository';
 import { Product } from '../Product';
 import { ShoppingCart } from '../ShoppingCart';
 import { ProductInput } from '../dto/ProductInput';
