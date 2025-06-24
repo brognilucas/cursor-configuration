@@ -20,6 +20,7 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@types/express": "^5.0.3",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.11.24",
     "@typescript-eslint/eslint-plugin": "^7.1.0",
@@ -34,6 +35,7 @@
   "dependencies": {
     "@types/pg": "^8.15.4",
     "@types/uuid": "^10.0.0",
+    "express": "^5.1.0",
     "pg": "^8.16.2",
     "testcontainers": "^11.0.3",
     "typeorm": "^0.3.25",
