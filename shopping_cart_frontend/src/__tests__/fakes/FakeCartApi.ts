@@ -5,7 +5,7 @@ import { CartApi } from '../../hooks/useCartApi';
 export class FakeCartApi implements CartApi {
   private _cartItems: CartItem[] = [];
 
-  async addToCart(product: Product): Promise<CartItem[]> {
+  async addToCart(product: Product, _cartId?: string): Promise<CartItem[]> {
     const existingItem = this._cartItems.find(item => item.id === product.id);
     
     if (existingItem) {
@@ -21,7 +21,11 @@ export class FakeCartApi implements CartApi {
     return Promise.resolve(this._cartItems);
   }
 
-  async getCartItems(): Promise<CartItem[]> {
+  async getCartItems(_cartId?: string): Promise<CartItem[]> {
     return Promise.resolve(this._cartItems);
+  }
+
+  async createCart(): Promise<string> {
+    return Promise.resolve('fake-cart-id');
   }
 } 

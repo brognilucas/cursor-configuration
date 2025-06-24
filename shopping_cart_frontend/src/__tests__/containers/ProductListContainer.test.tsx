@@ -59,4 +59,39 @@ describe('ProductListContainer', () => {
       expect(screen.getByText(/Apple x 1/)).toBeInTheDocument();
     });
   });
+
+  it('creates and persists a cartId in localStorage if none exists', async () => {
+    // Clear localStorage before test
+    localStorage.clear();
+
+    // Mock CartApi to simulate cart creation
+    const cartId = 'test-cart-id';
+    let created = false;
+    const cartApi = {
+      addToCart: jest.fn().mockResolvedValue([]),
+      getCartItems: jest.fn().mockResolvedValue([]),
+      createCart: jest.fn().mockImplementation(() => {
+        created = true;
+        return Promise.resolve(cartId);
+      })
+    };
+    const productApi = new FakeProductApi();
+
+    // Render and trigger cart logic
+    render(<ProductListContainer productApi={productApi} cartApi={cartApi} />);
+
+    // Wait for cart creation
+    await waitFor(() => {
+      expect(created).toBe(true);
+      expect(localStorage.getItem('cartId')).toBe(cartId);
+    });
+
+    // Simulate reload: render again, should reuse cartId
+    created = false;
+    render(<ProductListContainer productApi={productApi} cartApi={cartApi} />);
+    await waitFor(() => {
+      expect(localStorage.getItem('cartId')).toBe(cartId);
+      expect(created).toBe(false);
+    });
+  });
 }); 

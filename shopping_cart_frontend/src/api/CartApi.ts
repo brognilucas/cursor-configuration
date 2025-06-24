@@ -28,4 +28,15 @@ export class RealCartApi implements CartApi {
       quantity: 1,
     }));
   }
+
+  async createCart(): Promise<string> {
+    const response = await fetch(`${API_URL}/shopping-carts`, {
+      method: 'POST',
+    });
+    if (!response.ok) {
+      throw new Error('Failed to create cart');
+    }
+    const data = await response.json();
+    return data.cartId;
+  }
 } 
