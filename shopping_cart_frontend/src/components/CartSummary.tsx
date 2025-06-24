@@ -10,8 +10,10 @@ export const CartSummary: React.FC<CartSummaryProps> = ({ items }) => {
     return <div>Your cart is empty.</div>;
   }
 
+  const totalPrice = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
   return (
-    <div>
+    <div className="cart-summary">
       <h2>Cart Summary</h2>
       <ul>
         {items.map(item => (
@@ -20,6 +22,9 @@ export const CartSummary: React.FC<CartSummaryProps> = ({ items }) => {
           </li>
         ))}
       </ul>
+      <div className="cart-total">
+        <strong>Total: ${totalPrice.toFixed(2)}</strong>
+      </div>
     </div>
   );
 }; 

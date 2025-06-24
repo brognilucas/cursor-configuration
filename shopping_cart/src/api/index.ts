@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import { ShoppingCartRepository } from '../repositories/ShoppingCartRepository';
 import { ShoppingCartController } from './ShoppingCartController';
 import { GetShoppingCartSummaryService } from '../application/GetShoppingCartSummaryService';
@@ -13,6 +14,13 @@ export function createApp(
   productRepository: ProductRepository
 ): express.Express {
   const app = express();
+  
+  app.use(cors({
+    origin: 'http://localhost:3001',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }));
+
   app.use(express.json());
 
   const getCartSummaryService = new GetShoppingCartSummaryService(shoppingCartRepository);

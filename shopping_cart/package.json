@@ -33,8 +33,10 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@types/cors": "^2.8.19",
     "@types/pg": "^8.15.4",
     "@types/uuid": "^10.0.0",
+    "cors": "^2.8.5",
     "express": "^5.1.0",
     "pg": "^8.16.2",
     "testcontainers": "^11.0.3",
