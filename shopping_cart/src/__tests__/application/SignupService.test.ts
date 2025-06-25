@@ -1,21 +1,9 @@
 import { SignupService } from '../../application/SignupService';
 import { FakeUserRepository } from '../repositories/FakeUserRepository';
+import { FakePasswordHasher } from '../fakes/FakePasswordHasher';
+import { FakeJwtGenerator } from '../fakes/FakeJwtGenerator';
 import { SignupInput } from '../../dto/SignupInput';
 import { AuthOutput } from '../../dto/AuthOutput';
-
-// Fake password hasher for test
-class FakePasswordHasher {
-  async hash(password: string): Promise<string> {
-    return `hashed-${password}`;
-  }
-}
-
-// Fake JWT generator for test
-class FakeJwtGenerator {
-  generate(_payload: object): string {
-    return 'fake-jwt-token';
-  }
-}
 
 describe('SignupService', () => {
   it('creates a new user, hashes password, and returns AuthOutput with token', async () => {

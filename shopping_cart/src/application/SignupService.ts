@@ -2,13 +2,15 @@ import { SignupInput } from '../dto/SignupInput';
 import { AuthOutput } from '../dto/AuthOutput';
 import { UserRepository } from '../repositories/UserRepository';
 import { User } from '../domain/User';
+import { PasswordHasher } from './PasswordHasher';
+import { JwtGenerator } from './JwtGenerator';
 import { v4 as uuidv4 } from 'uuid';
 
 export class SignupService {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly passwordHasher: { hash(password: string): Promise<string> },
-    private readonly jwtGenerator: { generate(payload: object): string }
+    private readonly passwordHasher: PasswordHasher,
+    private readonly jwtGenerator: JwtGenerator
   ) {}
 
   async execute(input: SignupInput): Promise<AuthOutput> {
