@@ -1,8 +1,10 @@
 import { UserRepository } from '../repositories/UserRepository';
 import { User } from '../domain/User';
+import { FakeUserRepository } from '../__tests__/repositories/FakeUserRepository';
 
 describe.each([
-  // We'll add implementations here as we create them
+  new FakeUserRepository(),
+  // We'll add PostgresUserRepository here later
 ])('[CONTRACT] User Repository', (repository: UserRepository) => {
   afterEach(async () => {
     await repository.cleanup();
