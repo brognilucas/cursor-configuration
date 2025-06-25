@@ -33,11 +33,15 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.19",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/pg": "^8.15.4",
     "@types/uuid": "^10.0.0",
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.2",
     "testcontainers": "^11.0.3",
     "typeorm": "^0.3.25",
