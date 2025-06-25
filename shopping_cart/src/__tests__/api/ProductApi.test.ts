@@ -1,18 +1,31 @@
 import request from 'supertest';
-import { createApp } from '../../api';
+import express from 'express';
+import { assembleApp } from '../../api/AppAssembler';
+import { createProductRoutes, ProductDependencies } from '../../api/factories/ProductRouteFactory';
 import { FakeProductRepository } from '../repositories/FakeProductRepository';
-import { FakeShoppingCartRepository } from '../repositories/FakeShoppingCartRepository';
 import { Product } from '../../domain/Product';
+
+function createTestApp(productDeps: ProductDependencies): express.Express {
+  const productRouter = createProductRoutes(productDeps);
+  
+  const routes = [
+    { path: '/products', router: productRouter }
+  ];
+
+  return assembleApp(routes);
+}
 
 describe('Product API', () => {
   let productRepository: FakeProductRepository;
-  let shoppingCartRepository: FakeShoppingCartRepository;
-  let app: ReturnType<typeof createApp>;
+  let app: express.Express;
 
   beforeEach(() => {
     productRepository = new FakeProductRepository();
-    shoppingCartRepository = new FakeShoppingCartRepository();
-    app = createApp(shoppingCartRepository, productRepository);
+    const productDeps: ProductDependencies = {
+      productRepository: productRepository
+    };
+    
+    app = createTestApp(productDeps);
   });
 
   it('returns empty array when no products exist', async () => {

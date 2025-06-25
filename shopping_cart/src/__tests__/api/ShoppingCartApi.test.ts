@@ -1,18 +1,33 @@
 import request from 'supertest';
+import express from 'express';
+import { assembleApp } from '../../api/AppAssembler';
+import { createShoppingCartRoutes, ShoppingCartDependencies } from '../../api/factories/ShoppingCartRouteFactory';
 import { FakeShoppingCartRepository } from '../repositories/FakeShoppingCartRepository';
 import { Product } from '../../domain/Product';
 import { ShoppingCart } from '../../domain/ShoppingCart';
 import { ProductInput } from '../../dto/ProductInput';
-import { createApp } from '../../api';
-import { FakeProductRepository } from '../repositories/FakeProductRepository';
+
+function createTestApp(shoppingCartDeps: ShoppingCartDependencies): express.Express {
+  const shoppingCartRouter = createShoppingCartRoutes(shoppingCartDeps);
+  
+  const routes = [
+    { path: '/shopping-carts', router: shoppingCartRouter }
+  ];
+
+  return assembleApp(routes);
+}
 
 describe('ShoppingCart API', () => {
   let repository: FakeShoppingCartRepository;
-  let app: ReturnType<typeof createApp>;
+  let app: express.Express;
 
   beforeEach(() => {
     repository = new FakeShoppingCartRepository();
-    app = createApp(repository, new FakeProductRepository());
+    const shoppingCartDeps: ShoppingCartDependencies = {
+      shoppingCartRepository: repository
+    };
+    
+    app = createTestApp(shoppingCartDeps);
   });
 
   it('returns 200 status for cart summary', async () => {

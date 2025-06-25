@@ -1,10 +1,20 @@
 import request from 'supertest';
 import express from 'express';
+import { assembleApp } from '../../api/AppAssembler';
 import { createAuthRoutes, AuthDependencies } from '../../api/factories/AuthRouteFactory';
-import { assembleApp, RouteConfig } from '../../api/AppAssembler';
 import { FakeUserRepository } from '../repositories/FakeUserRepository';
 import { FakePasswordHasher } from '../fakes/FakePasswordHasher';
 import { FakeJwtGenerator } from '../fakes/FakeJwtGenerator';
+
+function createTestApp(authDeps: AuthDependencies): express.Express {
+  const authRouter = createAuthRoutes(authDeps);
+  
+  const routes = [
+    { path: '/auth', router: authRouter }
+  ];
+
+  return assembleApp(routes);
+}
 
 describe('AuthApi', () => {
   let app: express.Express;
@@ -16,13 +26,7 @@ describe('AuthApi', () => {
       jwtGenerator: new FakeJwtGenerator()
     };
 
-    const authRouter = createAuthRoutes(authDeps);
-    
-    const routes: RouteConfig[] = [
-      { path: '/auth', router: authRouter }
-    ];
-
-    app = assembleApp(routes);
+    app = createTestApp(authDeps);
   });
 
   describe('POST /signup', () => {
