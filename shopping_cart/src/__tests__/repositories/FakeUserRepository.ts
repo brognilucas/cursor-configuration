@@ -18,7 +18,7 @@ export class FakeUserRepository implements UserRepository {
     return this._users.get(id) || null;
   }
 
-  async cleanup(): Promise<void> {
+  clear(): void {
     this._users.clear();
     this._usersByEmail.clear();
   }
