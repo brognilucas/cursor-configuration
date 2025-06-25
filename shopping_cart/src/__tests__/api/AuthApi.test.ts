@@ -1,23 +1,28 @@
 import request from 'supertest';
 import express from 'express';
-import { createApp } from '../../api';
+import { createAuthRoutes, AuthDependencies } from '../../api/factories/AuthRouteFactory';
+import { assembleApp, RouteConfig } from '../../api/AppAssembler';
 import { FakeUserRepository } from '../repositories/FakeUserRepository';
 import { FakePasswordHasher } from '../fakes/FakePasswordHasher';
 import { FakeJwtGenerator } from '../fakes/FakeJwtGenerator';
-import { FakeShoppingCartRepository } from '../repositories/FakeShoppingCartRepository';
-import { FakeProductRepository } from '../repositories/FakeProductRepository';
 
 describe('AuthApi', () => {
   let app: express.Express;
 
   beforeEach(() => {
-    const userRepository = new FakeUserRepository();
-    const passwordHasher = new FakePasswordHasher();
-    const jwtGenerator = new FakeJwtGenerator();
-    const shoppingCartRepository = new FakeShoppingCartRepository();
-    const productRepository = new FakeProductRepository();
+    const authDeps: AuthDependencies = {
+      userRepository: new FakeUserRepository(),
+      passwordHasher: new FakePasswordHasher(),
+      jwtGenerator: new FakeJwtGenerator()
+    };
 
-    app = createApp(shoppingCartRepository, productRepository, userRepository, passwordHasher, jwtGenerator);
+    const authRouter = createAuthRoutes(authDeps);
+    
+    const routes: RouteConfig[] = [
+      { path: '/auth', router: authRouter }
+    ];
+
+    app = assembleApp(routes);
   });
 
   describe('POST /signup', () => {
