@@ -1,0 +1,30 @@
+import { SignupInput } from '../dto/SignupInput';
+import { AuthOutput } from '../dto/AuthOutput';
+import { UserRepository } from '../repositories/UserRepository';
+import { User } from '../domain/User';
+import { v4 as uuidv4 } from 'uuid';
+
+export class SignupService {
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly passwordHasher: { hash(password: string): Promise<string> },
+    private readonly jwtGenerator: { generate(payload: object): string }
+  ) {}
+
+  async execute(input: SignupInput): Promise<AuthOutput> {
+    const existing = await this.userRepository.findByEmail(input.email);
+    if (existing) {
+      throw new Error('Email already in use');
+    }
+    const hashedPassword = await this.passwordHasher.hash(input.password);
+    const user = new User(uuidv4(), input.email, input.name, hashedPassword);
+    await this.userRepository.save(user);
+    const token = this.jwtGenerator.generate({ userId: user.id(), email: user.email() });
+    return {
+      userId: user.id(),
+      name: user.name(),
+      email: user.email(),
+      token,
+    };
+  }
+} 
