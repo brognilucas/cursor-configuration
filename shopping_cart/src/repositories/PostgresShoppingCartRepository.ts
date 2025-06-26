@@ -15,11 +15,12 @@ export class PostgresShoppingCartRepository implements ShoppingCartRepository {
     this.cartProductRepository = dataSource.getRepository(CartProductEntity);
   }
 
-  async save(cart: ShoppingCart, products: Product[]): Promise<void> {
-    let entity = await this.cartRepository.findOne({ where: { id: cart.id() } });
+  async save(cart: ShoppingCart, products: Product[], userId: string): Promise<void> {
+    let entity = await this.cartRepository.findOne({ where: { id: cart.id(), user_id: userId } });
     if (!entity) {
       entity = new ShoppingCartEntity();
       entity.id = cart.id();
+      entity.user_id = userId;
       await this.cartRepository.save(entity);
     }
 
@@ -35,7 +36,12 @@ export class PostgresShoppingCartRepository implements ShoppingCartRepository {
     await this.cartProductRepository.save(cartProducts);
   }
 
-  async load(id: string): Promise<ShoppingCartOutput> {
+  async load(id: string, userId: string): Promise<ShoppingCartOutput> {
+    const cartEntity = await this.cartRepository.findOne({ where: { id, user_id: userId } });
+    if (!cartEntity) {
+      throw new Error('Cart not found');
+    }
+
     const cartProducts = await this.cartProductRepository.find({
       where: { cart_id: id },
       relations: ['product']

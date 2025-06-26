@@ -4,7 +4,7 @@ import { ShoppingCartOutput } from '../../dto/ShoppingCartOutput';
 import { ShoppingCartRepository } from '../../repositories/ShoppingCartRepository';
 
 export class FakeShoppingCartRepository implements ShoppingCartRepository {
-  private _carts: Set<string> = new Set();
+  private _carts: Map<string, string> = new Map(); // cartId -> userId
   private _cartProducts: Map<string, { product_id: string; quantity: number }[]> = new Map();
   private _products: Map<string, { name: string; price: number }> = new Map();
 
@@ -12,8 +12,8 @@ export class FakeShoppingCartRepository implements ShoppingCartRepository {
     this._products.set(id, { name, price });
   }
 
-  async save(cart: ShoppingCart, products: Product[]): Promise<void> {
-    this._carts.add(cart.id());
+  async save(cart: ShoppingCart, products: Product[], userId: string): Promise<void> {
+    this._carts.set(cart.id(), userId);
     this._cartProducts.set(
       cart.id(),
       products.map(product => ({ product_id: product.id(), quantity: 1 }))
@@ -26,10 +26,12 @@ export class FakeShoppingCartRepository implements ShoppingCartRepository {
     });
   }
 
-  async load(id: string): Promise<ShoppingCartOutput> {
-    if (!this._carts.has(id)) {
-      return { id, products: [] };
+  async load(id: string, userId: string): Promise<ShoppingCartOutput> {
+    const cartUserId = this._carts.get(id);
+    if (!cartUserId || cartUserId !== userId) {
+      throw new Error('Cart not found');
     }
+
     const cartProducts = this._cartProducts.get(id) || [];
     const products = cartProducts.map(cp => {
       const prod = this._products.get(cp.product_id) || { name: '', price: 0 };

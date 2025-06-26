@@ -84,7 +84,9 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
             { id: '5', name: 'Cart 2 Product', price: 50 },
             { id: '6', name: 'Initial Product', price: 60 },
             { id: '7', name: 'New Product', price: 70 },
-            { id: '8', name: 'Preserved Product', price: 99.99 }
+            { id: '8', name: 'Preserved Product', price: 99.99 },
+            { id: 'user1-product', name: 'User 1 Product', price: 10 },
+            { id: 'user2-product', name: 'User 2 Product', price: 20 }
           ]);
         }
       }
@@ -100,7 +102,8 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
       it('returns empty products list for a new cart', async () => {
         const repository = instance();
         const cart = new ShoppingCart(repository, 'new-cart-id');
-        const loadedCart = await repository.load(cart.id());
+        await repository.save(cart, [], 'test-user');
+        const loadedCart = await repository.load(cart.id(), 'test-user');
         expect(loadedCart.products).toEqual([]);
       });
 
@@ -109,8 +112,8 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
         const product = new Product('1', 'Test Product', 10);
         const cart = new ShoppingCart(repository, 'test-cart-id');
 
-        await repository.save(cart, [product]);
-        const loadedCart = await repository.load(cart.id());
+        await repository.save(cart, [product], 'test-user');
+        const loadedCart = await repository.load(cart.id(), 'test-user');
         expect(loadedCart.products).toEqual([product]);
       });
 
@@ -123,8 +126,8 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
         ];
         const cart = new ShoppingCart(repository, 'multi-product-cart');
 
-        await repository.save(cart, products);
-        const loadedCart = await repository.load(cart.id());
+        await repository.save(cart, products, 'test-user');
+        const loadedCart = await repository.load(cart.id(), 'test-user');
         expect(loadedCart.products).toEqual(products);
       });
 
@@ -135,11 +138,11 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
         const cart1 = new ShoppingCart(repository, 'cart-1');
         const cart2 = new ShoppingCart(repository, 'cart-2');
 
-        await repository.save(cart1, [product1]);
-        await repository.save(cart2, [product2]);
+        await repository.save(cart1, [product1], 'test-user');
+        await repository.save(cart2, [product2], 'test-user');
 
-        const loadedCart1 = await repository.load(cart1.id());
-        const loadedCart2 = await repository.load(cart2.id());
+        const loadedCart1 = await repository.load(cart1.id(), 'test-user');
+        const loadedCart2 = await repository.load(cart2.id(), 'test-user');
 
         expect(loadedCart1.products).toEqual([product1]);
         expect(loadedCart2.products).toEqual([product2]);
@@ -154,10 +157,10 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
           new Product('2', 'Second Product', 20)
         ];
 
-        await repository.save(cart, [initialProduct]);
-        await repository.save(cart, updatedProducts);
+        await repository.save(cart, [initialProduct], 'test-user');
+        await repository.save(cart, updatedProducts, 'test-user');
 
-        const loadedCart = await repository.load(cart.id());
+        const loadedCart = await repository.load(cart.id(), 'test-user');
         expect(loadedCart.products).toEqual(updatedProducts);
       });
 
@@ -166,13 +169,40 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
         const product = new Product('1', 'Test Product', 10);
         const cart = new ShoppingCart(repository, 'data-preservation-cart');
 
-        await repository.save(cart, [product]);
-        const loadedCart = await repository.load(cart.id());
+        await repository.save(cart, [product], 'test-user');
+        const loadedCart = await repository.load(cart.id(), 'test-user');
         const loadedProduct = loadedCart.products[0];
 
         expect(loadedProduct.id()).toBe(product.id());
         expect(loadedProduct.name()).toBe(product.name());
         expect(loadedProduct.price()).toBe(product.price());
+      });
+
+      it('maintains user isolation for shopping carts', async () => {
+        const repository = instance();
+        const user1Cart = new ShoppingCart(repository, 'user1-cart');
+        const user2Cart = new ShoppingCart(repository, 'user2-cart');
+        const product1 = new Product('user1-product', 'User 1 Product', 10);
+        const product2 = new Product('user2-product', 'User 2 Product', 20);
+
+        await repository.save(user1Cart, [product1], 'user1');
+        await repository.save(user2Cart, [product2], 'user2');
+
+        const user1LoadedCart = await repository.load(user1Cart.id(), 'user1');
+        const user2LoadedCart = await repository.load(user2Cart.id(), 'user2');
+
+        expect(user1LoadedCart.products).toEqual([product1]);
+        expect(user2LoadedCart.products).toEqual([product2]);
+      });
+
+      it('prevents user from accessing another users cart', async () => {
+        const repository = instance();
+        const user1Cart = new ShoppingCart(repository, 'user1-cart');
+        const product1 = new Product('user1-product', 'User 1 Product', 10);
+
+        await repository.save(user1Cart, [product1], 'user1');
+
+        await expect(repository.load(user1Cart.id(), 'user2')).rejects.toThrow('Cart not found');
       });
     });
   });

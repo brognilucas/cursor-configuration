@@ -11,9 +11,9 @@ export interface ShoppingCartSummary {
 export class GetShoppingCartSummaryService {
   constructor(private readonly repository: ShoppingCartRepository) {}
 
-  async execute(cartId: string): Promise<ShoppingCartSummary> {
+  async execute(cartId: string, userId: string): Promise<ShoppingCartSummary> {
     const cart = new ShoppingCart(this.repository, cartId);
-    const products = await cart.listProducts();
+    const products = await cart.listProducts(userId);
     const totalItems = products.length;
     const totalPrice = products.reduce((sum, p) => sum + p.price(), 0);
     return {

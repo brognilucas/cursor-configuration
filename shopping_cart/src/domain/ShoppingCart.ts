@@ -10,15 +10,15 @@ export class ShoppingCart {
     this._id = id ?? uuid();
   }
 
-  async addProduct(product: Product): Promise<void> {
-    const cartData = await this._repository.load(this._id);
+  async addProduct(product: Product, userId: string): Promise<void> {
+    const cartData = await this._repository.load(this._id, userId);
     this._products = cartData.products;
     this._products.push(product);
-    await this._repository.save(this, this._products);
+    await this._repository.save(this, this._products, userId);
   }
 
-  async listProducts(): Promise<Product[]> {
-    const cartData = await this._repository.load(this._id);
+  async listProducts(userId: string): Promise<Product[]> {
+    const cartData = await this._repository.load(this._id, userId);
     this._products = cartData.products;
     return [...this._products];
   }
@@ -27,8 +27,8 @@ export class ShoppingCart {
     return this._id;
   }
 
-  async save(): Promise<void> {
-    await this._repository.save(this, this._products);
+  async save(userId: string): Promise<void> {
+    await this._repository.save(this, this._products, userId);
   }
 
   setProducts(products: Product[]): void {
