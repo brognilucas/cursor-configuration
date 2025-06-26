@@ -24,17 +24,34 @@ export class PostgresShoppingCartRepository implements ShoppingCartRepository {
       await this.cartRepository.save(entity);
     }
     
-    await this.cartItemRepository.delete({ cart_id: cart.id() });
+    // Get existing cart items
+    const existingItems = await this.cartItemRepository.find({ where: { cart_id: cart.id() } });
+    const existingItemMap = new Map(existingItems.map(item => [item.product_id, item]));
     
-    const cartItems = items.map(item => {
-      const cartItem = new CartItemEntity();
-      cartItem.cart_id = cart.id();
-      cartItem.product_id = item.productId;
-      cartItem.quantity = item.quantity;
-      return cartItem;
-    });
+    // Process each item in the new items array
+    for (const item of items) {
+      const existingItem = existingItemMap.get(item.productId);
+      
+      if (existingItem) {
+        // Update existing item
+        existingItem.quantity = item.quantity;
+        await this.cartItemRepository.save(existingItem);
+        existingItemMap.delete(item.productId); // Remove from map to track processed items
+      } else {
+        // Create new item
+        const cartItem = new CartItemEntity();
+        cartItem.cart_id = cart.id();
+        cartItem.product_id = item.productId;
+        cartItem.quantity = item.quantity;
+        await this.cartItemRepository.save(cartItem);
+      }
+    }
     
-    await this.cartItemRepository.save(cartItems);
+    // Delete any remaining items that weren't in the new items array
+    const itemsToDelete = Array.from(existingItemMap.values());
+    if (itemsToDelete.length > 0) {
+      await this.cartItemRepository.remove(itemsToDelete);
+    }
   }
 
   async load(id: string, userId: string): Promise<ShoppingCartOutput> {

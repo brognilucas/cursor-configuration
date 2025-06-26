@@ -1,4 +1,3 @@
-import { Product } from '../domain/Product';
 import { ShoppingCart } from '../domain/ShoppingCart';
 import { FakeShoppingCartRepository } from '../__tests__/repositories/FakeShoppingCartRepository';
 import { PostgresShoppingCartRepository } from '../repositories/PostgresShoppingCartRepository';
@@ -6,8 +5,8 @@ import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers';
 import { DataSource } from 'typeorm';
 import { ShoppingCartEntity } from '../entities/ShoppingCartEntity';
 import { ShoppingCartRepository } from '../repositories/ShoppingCartRepository';
-import { ProductEntity } from '../entities/ProductEntity';
-import { CartProductEntity } from '../entities/CartProductEntity';
+import { CartItemEntity } from '../entities/CartItemEntity';
+import { CartItem } from '../dto/CartItem';
 
 jest.setTimeout(30000);
 
@@ -39,7 +38,7 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
       username: 'test',
       password: 'test',
       database: 'testdb',
-      entities: [ShoppingCartEntity, ProductEntity, CartProductEntity],
+      entities: [ShoppingCartEntity, CartItemEntity],
       synchronize: true
     });
 
@@ -57,15 +56,7 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
       name: 'FakeRepository',
       instance: (): ShoppingCartRepository => new FakeShoppingCartRepository(),
       beforeEach: async (): Promise<void> => {
-        const repo = new FakeShoppingCartRepository();
-        repo.registerProduct('1', 'Test Product', 10);
-        repo.registerProduct('2', 'Second Product', 20);
-        repo.registerProduct('3', 'Third Product', 30);
-        repo.registerProduct('4', 'Cart 1 Product', 40);
-        repo.registerProduct('5', 'Cart 2 Product', 50);
-        repo.registerProduct('6', 'Initial Product', 60);
-        repo.registerProduct('7', 'New Product', 70);
-        repo.registerProduct('8', 'Preserved Product', 99.99);
+        // No setup needed for fake repository
       }
     },
     {
@@ -73,21 +64,8 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
       instance: (): ShoppingCartRepository => postgresRepository,
       beforeEach: async (): Promise<void> => {
         if (postgresDataSource.isInitialized) {
-          await postgresDataSource.getRepository(CartProductEntity).createQueryBuilder().delete().execute();
+          await postgresDataSource.getRepository(CartItemEntity).createQueryBuilder().delete().execute();
           await postgresDataSource.getRepository(ShoppingCartEntity).createQueryBuilder().delete().execute();
-          await postgresDataSource.getRepository(ProductEntity).createQueryBuilder().delete().execute();
-          await postgresDataSource.getRepository(ProductEntity).save([
-            { id: '1', name: 'Test Product', price: 10 },
-            { id: '2', name: 'Second Product', price: 20 },
-            { id: '3', name: 'Third Product', price: 30 },
-            { id: '4', name: 'Cart 1 Product', price: 40 },
-            { id: '5', name: 'Cart 2 Product', price: 50 },
-            { id: '6', name: 'Initial Product', price: 60 },
-            { id: '7', name: 'New Product', price: 70 },
-            { id: '8', name: 'Preserved Product', price: 99.99 },
-            { id: 'user1-product', name: 'User 1 Product', price: 10 },
-            { id: 'user2-product', name: 'User 2 Product', price: 20 }
-          ]);
         }
       }
     }
@@ -99,110 +77,119 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
         beforeEach(beforeEachHook);
       }
 
-      it('returns empty products list for a new cart', async () => {
+      it('returns empty items list for a new cart', async () => {
         const repository = instance();
         const cart = new ShoppingCart(repository, 'new-cart-id');
         await repository.save(cart, [], 'test-user');
         const loadedCart = await repository.load(cart.id(), 'test-user');
-        expect(loadedCart.products).toEqual([]);
+        expect(loadedCart.items).toEqual([]);
       });
 
-      it('saves and loads cart with a single product', async () => {
+      it('saves and loads cart with a single item', async () => {
         const repository = instance();
-        const product = new Product('1', 'Test Product', 10);
+        const item: CartItem = { productId: '1', quantity: 2 };
         const cart = new ShoppingCart(repository, 'test-cart-id');
 
-        await repository.save(cart, [product], 'test-user');
+        await repository.save(cart, [item], 'test-user');
         const loadedCart = await repository.load(cart.id(), 'test-user');
-        expect(loadedCart.products).toEqual([product]);
+        expect(loadedCart.items).toEqual([item]);
       });
 
-      it('saves and loads cart with multiple products', async () => {
+      it('saves and loads cart with multiple items', async () => {
         const repository = instance();
-        const products = [
-          new Product('1', 'Test Product', 10),
-          new Product('2', 'Second Product', 20),
-          new Product('3', 'Third Product', 30)
+        const items: CartItem[] = [
+          { productId: '1', quantity: 2 },
+          { productId: '2', quantity: 1 },
+          { productId: '3', quantity: 3 }
         ];
-        const cart = new ShoppingCart(repository, 'multi-product-cart');
+        const cart = new ShoppingCart(repository, 'multi-item-cart');
 
-        await repository.save(cart, products, 'test-user');
+        await repository.save(cart, items, 'test-user');
         const loadedCart = await repository.load(cart.id(), 'test-user');
-        expect(loadedCart.products).toEqual(products);
+        expect(loadedCart.items).toEqual(items);
       });
 
-      it('maintains separate products for different carts', async () => {
+      it('maintains separate items for different carts', async () => {
         const repository = instance();
-        const product1 = new Product('1', 'Test Product', 10);
-        const product2 = new Product('2', 'Second Product', 20);
+        const item1: CartItem = { productId: '1', quantity: 2 };
+        const item2: CartItem = { productId: '2', quantity: 1 };
         const cart1 = new ShoppingCart(repository, 'cart-1');
         const cart2 = new ShoppingCart(repository, 'cart-2');
 
-        await repository.save(cart1, [product1], 'test-user');
-        await repository.save(cart2, [product2], 'test-user');
+        await repository.save(cart1, [item1], 'test-user');
+        await repository.save(cart2, [item2], 'test-user');
 
         const loadedCart1 = await repository.load(cart1.id(), 'test-user');
         const loadedCart2 = await repository.load(cart2.id(), 'test-user');
 
-        expect(loadedCart1.products).toEqual([product1]);
-        expect(loadedCart2.products).toEqual([product2]);
+        expect(loadedCart1.items).toEqual([item1]);
+        expect(loadedCart2.items).toEqual([item2]);
       });
 
-      it('updates existing cart products', async () => {
+      it('updates existing cart items', async () => {
         const repository = instance();
         const cart = new ShoppingCart(repository, 'update-cart');
-        const initialProduct = new Product('1', 'Test Product', 10);
-        const updatedProducts = [
-          initialProduct,
-          new Product('2', 'Second Product', 20)
+        const initialItem: CartItem = { productId: '1', quantity: 2 };
+        const updatedItems: CartItem[] = [
+          { productId: '1', quantity: 3 },
+          { productId: '2', quantity: 1 }
         ];
 
-        await repository.save(cart, [initialProduct], 'test-user');
-        await repository.save(cart, updatedProducts, 'test-user');
+        await repository.save(cart, [initialItem], 'test-user');
+        await repository.save(cart, updatedItems, 'test-user');
 
         const loadedCart = await repository.load(cart.id(), 'test-user');
-        expect(loadedCart.products).toEqual(updatedProducts);
+        expect(loadedCart.items).toEqual(updatedItems);
       });
 
-      it('preserves product data correctly', async () => {
+      it('preserves item data correctly', async () => {
         const repository = instance();
-        const product = new Product('1', 'Test Product', 10);
+        const item: CartItem = { productId: '1', quantity: 5 };
         const cart = new ShoppingCart(repository, 'data-preservation-cart');
 
-        await repository.save(cart, [product], 'test-user');
+        await repository.save(cart, [item], 'test-user');
         const loadedCart = await repository.load(cart.id(), 'test-user');
-        const loadedProduct = loadedCart.products[0];
+        const loadedItem = loadedCart.items[0];
 
-        expect(loadedProduct.id()).toBe(product.id());
-        expect(loadedProduct.name()).toBe(product.name());
-        expect(loadedProduct.price()).toBe(product.price());
+        expect(loadedItem.productId).toBe(item.productId);
+        expect(loadedItem.quantity).toBe(item.quantity);
       });
 
       it('maintains user isolation for shopping carts', async () => {
         const repository = instance();
         const user1Cart = new ShoppingCart(repository, 'user1-cart');
         const user2Cart = new ShoppingCart(repository, 'user2-cart');
-        const product1 = new Product('user1-product', 'User 1 Product', 10);
-        const product2 = new Product('user2-product', 'User 2 Product', 20);
+        const item1: CartItem = { productId: 'user1-product', quantity: 2 };
+        const item2: CartItem = { productId: 'user2-product', quantity: 1 };
 
-        await repository.save(user1Cart, [product1], 'user1');
-        await repository.save(user2Cart, [product2], 'user2');
+        await repository.save(user1Cart, [item1], 'user1');
+        await repository.save(user2Cart, [item2], 'user2');
 
         const user1LoadedCart = await repository.load(user1Cart.id(), 'user1');
         const user2LoadedCart = await repository.load(user2Cart.id(), 'user2');
 
-        expect(user1LoadedCart.products).toEqual([product1]);
-        expect(user2LoadedCart.products).toEqual([product2]);
+        expect(user1LoadedCart.items).toEqual([item1]);
+        expect(user2LoadedCart.items).toEqual([item2]);
       });
 
       it('prevents user from accessing another users cart', async () => {
         const repository = instance();
         const user1Cart = new ShoppingCart(repository, 'user1-cart');
-        const product1 = new Product('user1-product', 'User 1 Product', 10);
+        const item: CartItem = { productId: 'test-product', quantity: 1 };
 
-        await repository.save(user1Cart, [product1], 'user1');
+        await repository.save(user1Cart, [item], 'user1');
 
         await expect(repository.load(user1Cart.id(), 'user2')).rejects.toThrow('Cart not found');
+      });
+
+      it('handles cart with no items', async () => {
+        const repository = instance();
+        const cart = new ShoppingCart(repository, 'empty-cart');
+
+        await repository.save(cart, [], 'test-user');
+        const loadedCart = await repository.load(cart.id(), 'test-user');
+
+        expect(loadedCart.items).toEqual([]);
       });
     });
   });
