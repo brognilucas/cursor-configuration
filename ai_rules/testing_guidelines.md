@@ -201,3 +201,6 @@ it('maintains separate products for different carts', async () => {
   }
 });
 ``` 
+
+### Don't add comments in tests
+- The code should be clear. Comments are not needed.

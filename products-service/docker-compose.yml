@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  products-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: products_service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - products_db_data:/var/lib/postgresql/data
+
+  products-service:
+    build: .
+    ports:
+      - "3002:3002"
+    environment:
+      DB_HOST: products-db
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: products_service
+      PORT: 3002
+    depends_on:
+      - products-db
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+volumes:
+  products_db_data: 
