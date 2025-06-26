@@ -6,7 +6,7 @@ export class CreateCartService {
 
   async execute(userId: string): Promise<string> {
     const cart = new ShoppingCart(this.repository);
-    await this.repository.save(cart, [], userId);
+    await this.repository.create(cart, [], userId);
     return cart.id();
   }
 } 

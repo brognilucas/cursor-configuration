@@ -80,7 +80,7 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
       it('returns empty items list for a new cart', async () => {
         const repository = instance();
         const cart = new ShoppingCart(repository, 'new-cart-id');
-        await repository.save(cart, [], 'test-user');
+        await repository.create(cart, [], 'test-user');
         const loadedCart = await repository.load(cart.id(), 'test-user');
         expect(loadedCart.items).toEqual([]);
       });
@@ -90,7 +90,7 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
         const item: CartItem = { productId: '1', quantity: 2 };
         const cart = new ShoppingCart(repository, 'test-cart-id');
 
-        await repository.save(cart, [item], 'test-user');
+        await repository.create(cart, [item], 'test-user');
         const loadedCart = await repository.load(cart.id(), 'test-user');
         expect(loadedCart.items).toEqual([item]);
       });
@@ -104,7 +104,7 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
         ];
         const cart = new ShoppingCart(repository, 'multi-item-cart');
 
-        await repository.save(cart, items, 'test-user');
+        await repository.create(cart, items, 'test-user');
         const loadedCart = await repository.load(cart.id(), 'test-user');
         expect(loadedCart.items).toEqual(items);
       });
@@ -116,8 +116,8 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
         const cart1 = new ShoppingCart(repository, 'cart-1');
         const cart2 = new ShoppingCart(repository, 'cart-2');
 
-        await repository.save(cart1, [item1], 'test-user');
-        await repository.save(cart2, [item2], 'test-user');
+        await repository.create(cart1, [item1], 'test-user');
+        await repository.create(cart2, [item2], 'test-user');
 
         const loadedCart1 = await repository.load(cart1.id(), 'test-user');
         const loadedCart2 = await repository.load(cart2.id(), 'test-user');
@@ -135,8 +135,8 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
           { productId: '2', quantity: 1 }
         ];
 
-        await repository.save(cart, [initialItem], 'test-user');
-        await repository.save(cart, updatedItems, 'test-user');
+        await repository.create(cart, [initialItem], 'test-user');
+        await repository.update(cart, updatedItems, 'test-user');
 
         const loadedCart = await repository.load(cart.id(), 'test-user');
         expect(loadedCart.items).toEqual(updatedItems);
@@ -147,7 +147,7 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
         const item: CartItem = { productId: '1', quantity: 5 };
         const cart = new ShoppingCart(repository, 'data-preservation-cart');
 
-        await repository.save(cart, [item], 'test-user');
+        await repository.create(cart, [item], 'test-user');
         const loadedCart = await repository.load(cart.id(), 'test-user');
         const loadedItem = loadedCart.items[0];
 
@@ -162,8 +162,8 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
         const item1: CartItem = { productId: 'user1-product', quantity: 2 };
         const item2: CartItem = { productId: 'user2-product', quantity: 1 };
 
-        await repository.save(user1Cart, [item1], 'user1');
-        await repository.save(user2Cart, [item2], 'user2');
+        await repository.create(user1Cart, [item1], 'user1');
+        await repository.create(user2Cart, [item2], 'user2');
 
         const user1LoadedCart = await repository.load(user1Cart.id(), 'user1');
         const user2LoadedCart = await repository.load(user2Cart.id(), 'user2');
@@ -177,7 +177,7 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
         const user1Cart = new ShoppingCart(repository, 'user1-cart');
         const item: CartItem = { productId: 'test-product', quantity: 1 };
 
-        await repository.save(user1Cart, [item], 'user1');
+        await repository.create(user1Cart, [item], 'user1');
 
         await expect(repository.load(user1Cart.id(), 'user2')).rejects.toThrow('Cart not found');
       });
@@ -186,10 +186,57 @@ describe('[CONTRACT] Shopping Cart Repository', () => {
         const repository = instance();
         const cart = new ShoppingCart(repository, 'empty-cart');
 
-        await repository.save(cart, [], 'test-user');
+        await repository.create(cart, [], 'test-user');
         const loadedCart = await repository.load(cart.id(), 'test-user');
 
         expect(loadedCart.items).toEqual([]);
+      });
+
+      it('creates a new cart with items', async () => {
+        const repository = instance();
+        const cart = new ShoppingCart(repository, 'new-cart-id');
+        const items: CartItem[] = [
+          { productId: '1', quantity: 2 },
+          { productId: '2', quantity: 1 }
+        ];
+        await repository.create(cart, items, 'test-user');
+        const loadedCart = await repository.load(cart.id(), 'test-user');
+        expect(loadedCart.items).toEqual(items);
+      });
+
+      it('throws when creating a cart that already exists', async () => {
+        const repository = instance();
+        const cart = new ShoppingCart(repository, 'duplicate-cart-id');
+        const items: CartItem[] = [
+          { productId: '1', quantity: 2 }
+        ];
+        await repository.create(cart, items, 'test-user');
+        await expect(repository.create(cart, items, 'test-user')).rejects.toThrow();
+      });
+
+      it('updates an existing cart with new items', async () => {
+        const repository = instance();
+        const cart = new ShoppingCart(repository, 'update-cart-id');
+        const initialItems: CartItem[] = [
+          { productId: '1', quantity: 2 }
+        ];
+        const updatedItems: CartItem[] = [
+          { productId: '1', quantity: 3 },
+          { productId: '2', quantity: 1 }
+        ];
+        await repository.create(cart, initialItems, 'test-user');
+        await repository.update(cart, updatedItems, 'test-user');
+        const loadedCart = await repository.load(cart.id(), 'test-user');
+        expect(loadedCart.items).toEqual(updatedItems);
+      });
+
+      it('throws when updating a cart that does not exist', async () => {
+        const repository = instance();
+        const cart = new ShoppingCart(repository, 'nonexistent-cart-id');
+        const items: CartItem[] = [
+          { productId: '1', quantity: 2 }
+        ];
+        await expect(repository.update(cart, items, 'test-user')).rejects.toThrow();
       });
     });
   });

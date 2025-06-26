@@ -21,7 +21,7 @@ export class ShoppingCart {
       this._items.push({ productId, quantity });
     }
     
-    await this._repository.save(this, this._items, userId);
+    await this._repository.update(this, this._items, userId);
   }
 
   async listItems(userId: string): Promise<CartItem[]> {
@@ -35,7 +35,15 @@ export class ShoppingCart {
   }
 
   async save(userId: string): Promise<void> {
-    await this._repository.save(this, this._items, userId);
+    try {
+      await this._repository.create(this, this._items, userId);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Cart already exists') {
+        await this._repository.update(this, this._items, userId);
+      } else {
+        throw error;
+      }
+    }
   }
 
   setItems(items: CartItem[]): void {

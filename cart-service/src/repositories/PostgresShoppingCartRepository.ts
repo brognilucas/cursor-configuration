@@ -15,15 +15,29 @@ export class PostgresShoppingCartRepository implements ShoppingCartRepository {
     this.cartItemRepository = dataSource.getRepository(CartItemEntity);
   }
 
-  async save(cart: ShoppingCart, items: CartItem[], userId: string): Promise<void> {
-    let entity = await this.cartRepository.findOne({ where: { id: cart.id(), user_id: userId } });
-    if (!entity) {
-      entity = new ShoppingCartEntity();
-      entity.id = cart.id();
-      entity.user_id = userId;
-      await this.cartRepository.save(entity);
+  async create(cart: ShoppingCart, items: CartItem[], userId: string): Promise<void> {
+    const existingEntity = await this.cartRepository.findOne({ where: { id: cart.id(), user_id: userId } });
+    if (existingEntity) {
+      throw new Error('Cart already exists');
     }
-    
+
+    const entity = new ShoppingCartEntity();
+    entity.id = cart.id();
+    entity.user_id = userId;
+    await this.cartRepository.save(entity);
+    await this.saveCartItems(cart, items);
+  }
+
+  async update(cart: ShoppingCart, items: CartItem[], userId: string): Promise<void> {
+    const existingEntity = await this.cartRepository.findOne({ where: { id: cart.id(), user_id: userId } });
+    if (!existingEntity) {
+      throw new Error('Cart not found');
+    }
+
+    await this.saveCartItems(cart, items);
+  }
+
+  private async saveCartItems(cart: ShoppingCart, items: CartItem[]): Promise<void> {
     // Get existing cart items
     const existingItems = await this.cartItemRepository.find({ where: { cart_id: cart.id() } });
     const existingItemMap = new Map(existingItems.map(item => [item.product_id, item]));

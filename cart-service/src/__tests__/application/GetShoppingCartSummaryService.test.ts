@@ -18,7 +18,7 @@ describe('GetShoppingCartSummaryService', () => {
   it('returns empty cart summary when cart has no items', async () => {
     const cartId = 'test-cart-123';
     const cart = new ShoppingCart(repository, cartId);
-    await repository.save(cart, [], testUserId);
+    await repository.create(cart, [], testUserId);
 
     const summary = await service.execute(cartId, testUserId);
 
@@ -35,7 +35,7 @@ describe('GetShoppingCartSummaryService', () => {
       { productId: 'product-2', quantity: 1 }
     ];
     const cart = new ShoppingCart(repository, cartId);
-    await repository.save(cart, items, testUserId);
+    await repository.create(cart, items, testUserId);
 
     productApiClient.addProduct({ id: 'product-1', name: 'Product 1', price: 10 });
     productApiClient.addProduct({ id: 'product-2', name: 'Product 2', price: 15 });
