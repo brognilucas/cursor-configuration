@@ -4,6 +4,7 @@ import { FakeShoppingCartRepository } from '../repositories/FakeShoppingCartRepo
 
 describe('ShoppingCart', () => {
   let repository: FakeShoppingCartRepository;
+  const testUserId = 'test-user-123';
 
   beforeEach(() => {
     repository = new FakeShoppingCartRepository();
@@ -11,8 +12,9 @@ describe('ShoppingCart', () => {
 
   it('returns empty list when no products are in cart', async () => {
     const cart = new ShoppingCart(repository);
+    await cart.save(testUserId);
 
-    const products = await cart.listProducts();
+    const products = await cart.listProducts(testUserId);
 
     expect(products).toHaveLength(0);
   });
@@ -20,10 +22,11 @@ describe('ShoppingCart', () => {
   it('lists a single product when one product is added to cart (length)', async () => {
     const product = new Product('1', 'Test Product', 20);
     const cart = new ShoppingCart(repository);
+    await cart.save(testUserId);
 
-    await cart.addProduct(product);
+    await cart.addProduct(product, testUserId);
 
-    const products = await cart.listProducts();
+    const products = await cart.listProducts(testUserId);
 
     expect(products).toHaveLength(1);
   });
@@ -31,10 +34,11 @@ describe('ShoppingCart', () => {
   it('lists a single product when one product is added to cart (equality)', async () => {
     const product = new Product('1', 'Test Product', 20);
     const cart = new ShoppingCart(repository);
+    await cart.save(testUserId);
 
-    await cart.addProduct(product);
+    await cart.addProduct(product, testUserId);
 
-    const products = await cart.listProducts();
+    const products = await cart.listProducts(testUserId);
 
     expect(products[0]).toEqual(product);
   });
@@ -44,12 +48,13 @@ describe('ShoppingCart', () => {
     const product2 = new Product('2', 'Second Product', 30);
     const product3 = new Product('3', 'Third Product', 40);
     const cart = new ShoppingCart(repository);
+    await cart.save(testUserId);
 
-    await cart.addProduct(product1);
-    await cart.addProduct(product2);
-    await cart.addProduct(product3);
+    await cart.addProduct(product1, testUserId);
+    await cart.addProduct(product2, testUserId);
+    await cart.addProduct(product3, testUserId);
 
-    const products = await cart.listProducts();
+    const products = await cart.listProducts(testUserId);
 
     expect(products).toHaveLength(3);
   });
@@ -59,12 +64,13 @@ describe('ShoppingCart', () => {
     const product2 = new Product('2', 'Second Product', 30);
     const product3 = new Product('3', 'Third Product', 40);
     const cart = new ShoppingCart(repository);
+    await cart.save(testUserId);
 
-    await cart.addProduct(product1);
-    await cart.addProduct(product2);
-    await cart.addProduct(product3);
+    await cart.addProduct(product1, testUserId);
+    await cart.addProduct(product2, testUserId);
+    await cart.addProduct(product3, testUserId);
 
-    const products = await cart.listProducts();
+    const products = await cart.listProducts(testUserId);
 
     expect(products).toContainEqual(product1);
   });
@@ -74,12 +80,13 @@ describe('ShoppingCart', () => {
     const product2 = new Product('2', 'Second Product', 30);
     const product3 = new Product('3', 'Third Product', 40);
     const cart = new ShoppingCart(repository);
+    await cart.save(testUserId);
 
-    await cart.addProduct(product1);
-    await cart.addProduct(product2);
-    await cart.addProduct(product3);
+    await cart.addProduct(product1, testUserId);
+    await cart.addProduct(product2, testUserId);
+    await cart.addProduct(product3, testUserId);
 
-    const products = await cart.listProducts();
+    const products = await cart.listProducts(testUserId);
 
     expect(products).toContainEqual(product2);
   });
@@ -89,12 +96,13 @@ describe('ShoppingCart', () => {
     const product2 = new Product('2', 'Second Product', 30);
     const product3 = new Product('3', 'Third Product', 40);
     const cart = new ShoppingCart(repository);
+    await cart.save(testUserId);
 
-    await cart.addProduct(product1);
-    await cart.addProduct(product2);
-    await cart.addProduct(product3);
+    await cart.addProduct(product1, testUserId);
+    await cart.addProduct(product2, testUserId);
+    await cart.addProduct(product3, testUserId);
 
-    const products = await cart.listProducts();
+    const products = await cart.listProducts(testUserId);
 
     expect(products).toContainEqual(product3);
   });

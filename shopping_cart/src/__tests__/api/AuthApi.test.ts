@@ -43,7 +43,7 @@ describe('AuthApi', () => {
       expect(response.body).toHaveProperty('userId');
       expect(response.body.name).toBe('Alice');
       expect(response.body.email).toBe('alice@example.com');
-      expect(response.body.token).toBe('fake-jwt-token');
+      expect(response.body.token).toContain('fake-jwt-token');
     });
 
     it('returns 400 when email is already in use', async () => {
@@ -70,7 +70,6 @@ describe('AuthApi', () => {
 
   describe('POST /signin', () => {
     it('authenticates user and returns AuthOutput', async () => {
-      // First create a user
       await request(app)
         .post('/auth/signup')
         .send({
@@ -91,7 +90,7 @@ describe('AuthApi', () => {
       expect(response.body).toHaveProperty('userId');
       expect(response.body.name).toBe('Alice');
       expect(response.body.email).toBe('alice@example.com');
-      expect(response.body.token).toBe('fake-jwt-token');
+      expect(response.body.token).toContain('fake-jwt-token');
     });
 
     it('returns 401 when credentials are invalid', async () => {

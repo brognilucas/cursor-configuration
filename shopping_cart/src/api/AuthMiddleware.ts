@@ -1,8 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { JwtGenerator } from '../application/JwtGenerator';
 
+export interface UserPayload {
+  userId: string;
+  email: string;
+}
+
 export interface AuthenticatedRequest extends Request {
-  user?: object;
+  user?: UserPayload;
 }
 
 export class AuthMiddleware {
@@ -25,7 +30,7 @@ export class AuthMiddleware {
 
     try {
       const payload = this.jwtGenerator.verify(token);
-      req.user = payload;
+      req.user = payload as UserPayload;
       next();
     } catch (error) {
       res.status(401).json({ error: 'Invalid token' });

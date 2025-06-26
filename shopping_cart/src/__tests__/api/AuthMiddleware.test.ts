@@ -7,7 +7,6 @@ function createTestApp(authMiddleware: AuthMiddleware): express.Express {
   const app = express();
   app.use(express.json());
   
-  // Protected route for testing
   app.get('/protected', authMiddleware.authenticate.bind(authMiddleware), (req: AuthenticatedRequest, res) => {
     res.json({ message: 'Protected resource', user: req.user });
   });

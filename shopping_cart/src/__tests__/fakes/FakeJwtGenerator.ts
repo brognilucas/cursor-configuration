@@ -4,7 +4,7 @@ export class FakeJwtGenerator implements JwtGenerator {
   private _tokens: Map<string, object> = new Map();
 
   generate(payload: object): string {
-    const token = `fake-jwt-token-${Date.now()}`;
+    const token = 'fake-jwt-token';
     this._tokens.set(token, payload);
     return token;
   }

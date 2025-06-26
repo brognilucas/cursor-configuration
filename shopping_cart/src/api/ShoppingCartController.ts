@@ -1,8 +1,9 @@
-import { Request, Response, Router } from 'express';
+import { Response, Router } from 'express';
 import { GetShoppingCartSummaryService } from '../application/GetShoppingCartSummaryService';
 import { AddItemToShoppingCartService } from '../application/AddItemToShoppingCartService';
 import { ProductInput } from '../dto/ProductInput';
 import { CreateCartService } from '../application/CreateCartService';
+import { AuthenticatedRequest, UserPayload } from './AuthMiddleware';
 
 export function ShoppingCartController(
   getSummaryService: GetShoppingCartSummaryService,
@@ -11,19 +12,22 @@ export function ShoppingCartController(
 ): Router {
   const router = Router();
 
-  router.get('/:cartId', async (req: Request, res: Response) => {
-    const summary = await getSummaryService.execute(req.params.cartId);
+  router.get('/:cartId', async (req: AuthenticatedRequest, res: Response) => {
+    const user = req.user as UserPayload;
+    const summary = await getSummaryService.execute(req.params.cartId, user.userId);
     res.json(summary);
   });
 
-  router.post('/', async (_req: Request, res: Response) => {
-    const cartId = await createCartService.execute();
+  router.post('/', async (req: AuthenticatedRequest, res: Response) => {
+    const user = req.user as UserPayload;
+    const cartId = await createCartService.execute(user.userId);
     res.status(201).json({ cartId });
   });
 
-  router.post('/:cartId/items', async (req: Request, res: Response) => {
+  router.post('/:cartId/items', async (req: AuthenticatedRequest, res: Response) => {
+    const user = req.user as UserPayload;
     const product: ProductInput = req.body;
-    await addItemService.execute(req.params.cartId, product);
+    await addItemService.execute(req.params.cartId, product, user.userId);
     res.status(200).send();
   });
 
