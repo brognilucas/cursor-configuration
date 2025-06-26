@@ -90,10 +90,10 @@ describe('[CONTRACT] Product Repository', () => {
       it('preserves product data correctly', async () => {
         const repository = instance();
         const product = new Product('1', 'Test Product', 10.99);
-        
+
         await repository.save(product);
         const [savedProduct] = await repository.findAll();
-        
+
         expect(savedProduct.id()).toBe(product.id());
         expect(savedProduct.name()).toBe(product.name());
         expect(savedProduct.price()).toBe(product.price());
@@ -106,11 +106,11 @@ describe('[CONTRACT] Product Repository', () => {
           new Product('2', 'Second Product', 20.50),
           new Product('3', 'Third Product', 30.00)
         ];
-        
+
         for (const product of products) {
           await repository.save(product);
         }
-        
+
         const savedProducts = await repository.findAll();
         expect(savedProducts).toEqual(products);
       });
