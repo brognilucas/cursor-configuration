@@ -1,14 +1,16 @@
 import { ShoppingCartRepository } from '../repositories/ShoppingCartRepository';
 import { ShoppingCart } from '../domain/ShoppingCart';
-import { Product } from '../domain/Product';
-import { ProductInput } from '../dto/ProductInput';
+
+export interface AddItemInput {
+  productId: string;
+  quantity: number;
+}
 
 export class AddItemToShoppingCartService {
   constructor(private readonly repository: ShoppingCartRepository) {}
 
-  async execute(cartId: string, product: ProductInput, userId: string): Promise<void> {
+  async execute(cartId: string, input: AddItemInput, userId: string): Promise<void> {
     const cart = new ShoppingCart(this.repository, cartId);
-    const productInstance = new Product(product.id, product.name, product.price);
-    await cart.addProduct(productInstance, userId);
+    await cart.addProduct(input.productId, input.quantity, userId);
   }
 } 

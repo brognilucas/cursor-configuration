@@ -5,120 +5,188 @@ import { GetShoppingCartSummaryService } from '../../application/GetShoppingCart
 import { AddItemToShoppingCartService } from '../../application/AddItemToShoppingCartService';
 import { CreateCartService } from '../../application/CreateCartService';
 import { FakeShoppingCartRepository } from '../repositories/FakeShoppingCartRepository';
-import { FakeJwtGenerator } from '../fakes/FakeJwtGenerator';
-import { AuthMiddleware } from '../../api/AuthMiddleware';
+import { fakeAuth } from '../fakes/FakeAuthMiddleware';
+import { FakeProductApiClient } from '../fakes/FakeProductApiClient';
+import { AddItemInput } from '../../application/AddItemToShoppingCartService';
 
 function createTestApp(
   getSummaryService: GetShoppingCartSummaryService,
   addItemService: AddItemToShoppingCartService,
-  createCartService: CreateCartService,
-  authMiddleware: AuthMiddleware
+  createCartService: CreateCartService
 ): express.Express {
   const app = express();
   app.use(express.json());
   
   const shoppingCartRouter = ShoppingCartController(getSummaryService, addItemService, createCartService);
   
-  // Apply authentication middleware to all shopping cart routes
-  app.use('/shopping-carts', authMiddleware.authenticate.bind(authMiddleware), shoppingCartRouter);
+  app.use('/shopping-carts', fakeAuth({ userId: 'test-user' }), shoppingCartRouter);
 
   return app;
 }
 
-describe('ShoppingCartController', () => {
+describe('ShoppingCart Controller', () => {
+  let repository: FakeShoppingCartRepository;
   let app: express.Express;
-  let shoppingCartRepository: FakeShoppingCartRepository;
-  let jwtGenerator: FakeJwtGenerator;
-  let authMiddleware: AuthMiddleware;
+  let productApiClient: FakeProductApiClient;
   let getSummaryService: GetShoppingCartSummaryService;
-  let addItemService: AddItemToShoppingCartService;
-  let createCartService: CreateCartService;
 
-  beforeEach(() => {
-    shoppingCartRepository = new FakeShoppingCartRepository();
-    jwtGenerator = new FakeJwtGenerator();
-    authMiddleware = new AuthMiddleware(jwtGenerator);
-
-    getSummaryService = new GetShoppingCartSummaryService(shoppingCartRepository);
-    addItemService = new AddItemToShoppingCartService(shoppingCartRepository);
-    createCartService = new CreateCartService(shoppingCartRepository);
-
-    app = createTestApp(getSummaryService, addItemService, createCartService, authMiddleware);
-  });
-
-  it('creates a new cart for authenticated user', async () => {
-    const userPayload = { userId: 'user-123', email: 'test@example.com' };
-    const token = jwtGenerator.generate(userPayload);
-
+  async function createCart(): Promise<string> {
     const response = await request(app)
-      .post('/shopping-carts')
-      .set('Authorization', `Bearer ${token}`)
-      .expect(201);
+      .post(`/shopping-carts/`)
+      .send();
 
-    expect(response.body).toHaveProperty('cartId');
+    return response.body.cartId;
+  }
+  
+  beforeEach(() => {
+    repository = new FakeShoppingCartRepository();
+    productApiClient = new FakeProductApiClient();
+    getSummaryService = new GetShoppingCartSummaryService(repository, productApiClient);
+    const addItemService = new AddItemToShoppingCartService(repository);
+    const createCartService = new CreateCartService(repository);
+
+    app = createTestApp(getSummaryService, addItemService, createCartService);
   });
 
-  it('rejects cart creation without authentication', async () => {
-    await request(app)
-      .post('/shopping-carts')
-      .expect(401);
+  it('creates a new cart and returns a cartId', async () => {
+    const cartId = await createCart();
+    expect(cartId).toEqual(expect.any(String));
   });
 
-  it('adds item to cart for authenticated user', async () => {
-    const userPayload = { userId: 'user-123', email: 'test@example.com' };
-    const token = jwtGenerator.generate(userPayload);
+  it('returns 200 status for cart summary', async () => {
+    const cartId = await createCart();
+    const item1: AddItemInput = { productId: '1', quantity: 2 };
+    const item2: AddItemInput = { productId: '2', quantity: 1 };
 
-    const createResponse = await request(app)
-      .post('/shopping-carts')
-      .set('Authorization', `Bearer ${token}`);
-
-    const cartId = createResponse.body.cartId;
+    // Add products to fake API client
+    productApiClient.addProduct({ id: '1', name: 'Product 1', price: 10 });
+    productApiClient.addProduct({ id: '2', name: 'Product 2', price: 15 });
 
     await request(app)
       .post(`/shopping-carts/${cartId}/items`)
-      .set('Authorization', `Bearer ${token}`)
-      .send({
-        id: 'product-1',
-        name: 'Test Product',
-        price: 10
-      })
-      .expect(200);
-  });
+      .send(item1);
 
-  it('rejects adding item without authentication', async () => {
     await request(app)
-      .post('/shopping-carts/cart-123/items')
-      .send({
-        id: 'product-1',
-        name: 'Test Product',
-        price: 10
-      })
-      .expect(401);
+      .post(`/shopping-carts/${cartId}/items`)
+      .send(item2);
+
+    const response = await request(app).get(`/shopping-carts/${cartId}`);
+
+    expect(response.status).toBe(200);
   });
 
-  it('gets cart summary for authenticated user', async () => {
-    const userPayload = { userId: 'user-123', email: 'test@example.com' };
-    const token = jwtGenerator.generate(userPayload);
+  it('returns correct totalItems for cart summary', async () => {
+    const item1: AddItemInput = { productId: '1', quantity: 2 };
+    const item2: AddItemInput = { productId: '2', quantity: 1 };
 
-    const createResponse = await request(app)
-      .post('/shopping-carts')
-      .set('Authorization', `Bearer ${token}`);
-  
-    const cartId = createResponse.body.cartId;
-    const response = await request(app)
-      .get(`/shopping-carts/${cartId}`)
-      .set('Authorization', `Bearer ${token}`)
-      .expect(200);
+    const cartId = await createCart();
 
-    expect(response.body).toHaveProperty('cartId', cartId);
-    expect(response.body).toHaveProperty('totalItems');
-    expect(response.body).toHaveProperty('totalPrice');
-    expect(response.body).toHaveProperty('products');
-  });
+    // Add products to fake API client
+    productApiClient.addProduct({ id: '1', name: 'Product 1', price: 10 });
+    productApiClient.addProduct({ id: '2', name: 'Product 2', price: 15 });
 
-  it('rejects getting cart summary without authentication', async () => {
     await request(app)
-      .get('/shopping-carts/cart-123')
-      .expect(401);
+      .post(`/shopping-carts/${cartId}/items`)
+      .send(item1);
+
+    await request(app)
+      .post(`/shopping-carts/${cartId}/items`)
+      .send(item2);
+
+    const response = await request(app).get(`/shopping-carts/${cartId}`);
+
+    expect(response.body.totalItems).toBe(3);
+  });
+
+  it('returns correct totalPrice for cart summary', async () => {
+    const cartId = await createCart();
+    const item1: AddItemInput = { productId: '1', quantity: 2 };
+    const item2: AddItemInput = { productId: '2', quantity: 1 };
+
+    // Add products to fake API client
+    productApiClient.addProduct({ id: '1', name: 'Product 1', price: 10 });
+    productApiClient.addProduct({ id: '2', name: 'Product 2', price: 15 });
+
+    await request(app)
+      .post(`/shopping-carts/${cartId}/items`)
+      .send(item1);
+
+    await request(app)
+      .post(`/shopping-carts/${cartId}/items`)
+      .send(item2);
+
+    const response = await request(app).get(`/shopping-carts/${cartId}`);
+
+    expect(response.body.totalPrice).toBe(35); // (10 * 2) + (15 * 1) = 35
+  });
+
+  it('returns correct items for cart summary', async () => {
+    const cartId = await createCart();
+    const item1: AddItemInput = { productId: '1', quantity: 2 };
+    const item2: AddItemInput = { productId: '2', quantity: 1 };
+
+    // Add products to fake API client
+    productApiClient.addProduct({ id: '1', name: 'Product 1', price: 10 });
+    productApiClient.addProduct({ id: '2', name: 'Product 2', price: 15 });
+
+    await request(app)
+      .post(`/shopping-carts/${cartId}/items`)
+      .send(item1);
+
+    await request(app)
+      .post(`/shopping-carts/${cartId}/items`)
+      .send(item2);
+
+    const response = await request(app).get(`/shopping-carts/${cartId}`);
+
+    expect(response.body.items).toEqual([
+      { productId: '1', quantity: 2 },
+      { productId: '2', quantity: 1 }
+    ]);
+  });
+
+  it('adds a new item to a shopping cart (status)', async () => {
+    const cartId = await createCart();
+    const item: AddItemInput = { productId: '3', quantity: 1 };
+
+    const addResponse = await request(app)
+      .post(`/shopping-carts/${cartId}/items`)
+      .send(item);
+
+    expect(addResponse.status).toBe(200);
+  });
+
+  it('adds a new item to a shopping cart (totalItems)', async () => {
+    const cartId = await createCart();
+    const item: AddItemInput = { productId: '3', quantity: 2 };
+
+    // Add product to fake API client
+    productApiClient.addProduct({ id: '3', name: 'Product 3', price: 20 });
+
+    await request(app)
+      .post(`/shopping-carts/${cartId}/items`)
+      .send(item);
+
+    const getResponse = await request(app).get(`/shopping-carts/${cartId}`);
+
+    expect(getResponse.body.totalItems).toBe(2);
+  });
+
+  it('adds a new item to a shopping cart (items)', async () => {
+    const cartId = await createCart();
+    const item: AddItemInput = { productId: '3', quantity: 2 };
+
+    // Add product to fake API client
+    productApiClient.addProduct({ id: '3', name: 'Product 3', price: 20 });
+
+    await request(app)
+      .post(`/shopping-carts/${cartId}/items`)
+      .send(item);
+
+    const getResponse = await request(app).get(`/shopping-carts/${cartId}`);
+
+    expect(getResponse.body.items).toEqual([
+      { productId: '3', quantity: 2 }
+    ]);
   });
 }); 

@@ -1,11 +1,10 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { ShoppingCartEntity } from './ShoppingCartEntity';
-import { ProductEntity } from './ProductEntity';
 
-@Entity('cart_products')
-export class CartProductEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+@Entity('cart_items')
+export class CartItemEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column('text')
   cart_id: string;
@@ -16,11 +15,7 @@ export class CartProductEntity {
   @Column('int')
   quantity: number;
 
-  @ManyToOne(() => ShoppingCartEntity)
+  @ManyToOne(() => ShoppingCartEntity, cart => cart.cartItems)
   @JoinColumn({ name: 'cart_id' })
   cart: ShoppingCartEntity;
-
-  @ManyToOne(() => ProductEntity)
-  @JoinColumn({ name: 'product_id' })
-  product: ProductEntity;
 } 

@@ -1,6 +1,6 @@
-import { Product } from "../domain/Product";
+import { CartItem } from "./CartItem";
 
 export interface ShoppingCartOutput {
   id: string;
-  products: Product[];
+  items: CartItem[];
 }

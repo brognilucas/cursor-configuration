@@ -1,7 +1,6 @@
 import { DataSource } from 'typeorm';
 import { ShoppingCartEntity } from '../entities/ShoppingCartEntity';
-import { ProductEntity } from '../entities/ProductEntity';
-import { CartProductEntity } from '../entities/CartProductEntity';
+import { CartItemEntity } from '../entities/CartItemEntity';
 import { UserEntity } from '../entities/UserEntity';
 
 export const AppDataSource = new DataSource({
@@ -13,7 +12,7 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME!,
   synchronize: true,
   logging: false,
-  entities: [ShoppingCartEntity, ProductEntity, CartProductEntity, UserEntity],
+  entities: [ShoppingCartEntity, CartItemEntity, UserEntity],
   migrations: [],
   subscribers: [],
 }); 

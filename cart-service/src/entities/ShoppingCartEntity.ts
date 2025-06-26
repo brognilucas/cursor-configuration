@@ -1,4 +1,5 @@
-import { Entity, PrimaryColumn, Column } from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToMany } from 'typeorm';
+import { CartItemEntity } from './CartItemEntity';
 
 @Entity('shopping_carts')
 export class ShoppingCartEntity {
@@ -7,4 +8,7 @@ export class ShoppingCartEntity {
 
   @Column('text')
   user_id: string;
+
+  @OneToMany(() => CartItemEntity, cartItem => cartItem.cart)
+  cartItems: CartItemEntity[];
 } 

@@ -1,5 +1,5 @@
-import { ProductInput } from './ProductInput';
+import { CartItem } from './CartItem';
 
 export interface SaveShoppingCartInput {
-  products: ProductInput[];
+  items: CartItem[];
 } 

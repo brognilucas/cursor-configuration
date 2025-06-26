@@ -1,8 +1,8 @@
-import { ProductOutput } from './ProductOutput';
+import { CartItem } from './CartItem';
 
 export interface ShoppingCartSummary {
   cartId: string;
   totalItems: number;
   totalPrice: number;
-  products: ProductOutput[];
+  items: CartItem[];
 } 

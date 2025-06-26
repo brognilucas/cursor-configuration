@@ -1,7 +1,6 @@
 import { Response, Router } from 'express';
 import { GetShoppingCartSummaryService } from '../application/GetShoppingCartSummaryService';
-import { AddItemToShoppingCartService } from '../application/AddItemToShoppingCartService';
-import { ProductInput } from '../dto/ProductInput';
+import { AddItemToShoppingCartService, AddItemInput } from '../application/AddItemToShoppingCartService';
 import { CreateCartService } from '../application/CreateCartService';
 import { AuthenticatedRequest, UserPayload } from './AuthMiddleware';
 
@@ -13,22 +12,37 @@ export function ShoppingCartController(
   const router = Router();
 
   router.get('/:cartId', async (req: AuthenticatedRequest, res: Response) => {
-    const user = req.user as UserPayload;
-    const summary = await getSummaryService.execute(req.params.cartId, user.userId);
-    res.json(summary);
+    try {
+      const user = req.user as UserPayload;
+      const summary = await getSummaryService.execute(req.params.cartId, user.userId);
+      res.json(summary);
+    } catch (error) {
+      console.error('Error getting cart summary:', error);
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+    }
   });
 
   router.post('/', async (req: AuthenticatedRequest, res: Response) => {
-    const user = req.user as UserPayload;
-    const cartId = await createCartService.execute(user.userId);
-    res.status(201).json({ cartId });
+    try {
+      const user = req.user as UserPayload;
+      const cartId = await createCartService.execute(user.userId);
+      res.status(201).json({ cartId });
+    } catch (error) {
+      console.error('Error creating cart:', error);
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+    }
   });
 
   router.post('/:cartId/items', async (req: AuthenticatedRequest, res: Response) => {
-    const user = req.user as UserPayload;
-    const product: ProductInput = req.body;
-    await addItemService.execute(req.params.cartId, product, user.userId);
-    res.status(200).send();
+    try {
+      const user = req.user as UserPayload;
+      const item: AddItemInput = req.body;
+      await addItemService.execute(req.params.cartId, item, user.userId);
+      res.status(200).send();
+    } catch (error) {
+      console.error('Error adding item to cart:', error);
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+    }
   });
 
   return router;
