@@ -11,4 +11,8 @@ export class JwtTokenGenerator implements JwtGenerator {
   generate(payload: object): string {
     return jwt.sign(payload, this.secret, { expiresIn: '24h' });
   }
+
+  verify(token: string): object {
+    return jwt.verify(token, this.secret) as object;
+  }
 } 
