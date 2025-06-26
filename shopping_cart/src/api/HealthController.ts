@@ -7,7 +7,7 @@ export function HealthController(): Router {
     const healthStatus = {
       status: 'ok',
       timestamp: new Date().toISOString(),
-      service: 'shopping-cart-api'
+      service: 'cart-service'
     };
     
     res.json(healthStatus);

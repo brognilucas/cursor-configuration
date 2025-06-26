@@ -1,5 +1,5 @@
 {
-  "name": "cursor-config",
+  "name": "cart-service",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -15,10 +15,10 @@
     "test:all": "npm run test:unit && npm run test:contract",
     "seed": "ts-node src/scripts/seed.ts"
   },
-  "keywords": [],
+  "keywords": ["microservice", "cart"],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "Shopping Cart microservice for shopping cart application",
   "devDependencies": {
     "@types/express": "^5.0.3",
     "@types/jest": "^29.5.12",
