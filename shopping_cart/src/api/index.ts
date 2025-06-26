@@ -14,6 +14,7 @@ import { SignupService } from '../application/SignupService';
 import { SigninService } from '../application/SigninService';
 import { PasswordHasher } from '../application/PasswordHasher';
 import { JwtGenerator } from '../application/JwtGenerator';
+import { HealthController } from './HealthController';
 
 export function createApp(
   shoppingCartRepository: ShoppingCartRepository,
@@ -39,6 +40,7 @@ export function createApp(
   const signupService = new SignupService(userRepository, passwordHasher, jwtGenerator);
   const signinService = new SigninService(userRepository, passwordHasher, jwtGenerator);
 
+  app.use('/health', HealthController());
   app.use('/shopping-carts', ShoppingCartController(getCartSummaryService, addItemService, createCartService));
   app.use('/products', ProductController(getProductsService));
   app.use('/auth', AuthController(signupService, signinService));
