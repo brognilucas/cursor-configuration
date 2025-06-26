@@ -22,7 +22,6 @@ export class FakeProductRepository implements ProductRepository {
     }
   }
 
-  // Test helper methods
   clear(): void {
     this._products = [];
   }

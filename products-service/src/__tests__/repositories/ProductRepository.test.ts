@@ -1,5 +1,5 @@
 import { ProductRepository } from '../../repositories/ProductRepository';
-import { FakeProductRepository } from './FakeProductRepository';
+import { FakeProductRepository } from '../fakes/FakeProductRepository';
 import { Product } from '../../domain/Product';
 
 describe('ProductRepository', () => {

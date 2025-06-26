@@ -1,13 +1,30 @@
 import { createApp } from './api';
-import { FakeProductRepository } from './__tests__/repositories/FakeProductRepository';
+import { FakeProductRepository } from './__tests__/fakes/FakeProductRepository';
+import { PostgresProductRepository } from './repositories/PostgresProductRepository';
+import { AppDataSource } from './config/database';
 
 const port = process.env.PORT || 3002;
 
-// For now, using fake repository. In production, this would be a real repository
-const productRepository = new FakeProductRepository();
+async function startServer() {
+  let productRepository;
 
-const app = createApp(productRepository);
+  if (process.env.NODE_ENV === 'test') {
+    // Use fake repository for tests
+    productRepository = new FakeProductRepository();
+  } else {
+    // Use real repository for production
+    await AppDataSource.initialize();
+    productRepository = new PostgresProductRepository();
+  }
 
-app.listen(port, () => {
-  console.log(`Products service running on port ${port}`);
+  const app = createApp(productRepository);
+
+  app.listen(port, () => {
+    console.log(`Products service running on port ${port}`);
+  });
+}
+
+startServer().catch(error => {
+  console.error('Failed to start server:', error);
+  process.exit(1);
 }); 

@@ -2,11 +2,14 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   roots: ['<rootDir>/src'],
-  testMatch: ['**/__tests__/**/*.test.ts'],
+  testMatch: process.env.TEST_TYPE === 'contract' 
+    ? ['**/__contract_tests__/**/*.test.ts']
+    : ['**/__tests__/**/*.test.ts'],
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',
     '!src/__tests__/**',
+    '!src/__contract_tests__/**',
     '!src/index.ts'
   ],
   coverageDirectory: 'coverage',

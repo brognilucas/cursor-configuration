@@ -1,5 +1,5 @@
 import { CreateProductService } from '../../application/CreateProductService';
-import { FakeProductRepository } from '../repositories/FakeProductRepository';
+import { FakeProductRepository } from '../fakes/FakeProductRepository';
 import { Product } from '../../domain/Product';
 
 describe('CreateProductService', () => {

@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { createApp } from '../../api';
-import { FakeProductRepository } from '../repositories/FakeProductRepository';
+import { FakeProductRepository } from '../fakes/FakeProductRepository';
 
 describe('ProductApi', () => {
   let app: any;
