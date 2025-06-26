@@ -14,4 +14,17 @@ describe('FakeAuthApi', () => {
       token: 'fake-token-test@example.com'
     });
   });
+
+  it('user can create new account', async () => {
+    const authApi = new FakeAuthApi();
+
+    const result = await authApi.signup('New User', 'new@example.com', 'password123');
+
+    expect(result).toEqual({
+      userId: 'user-new@example.com',
+      name: 'New User',
+      email: 'new@example.com',
+      token: 'fake-token-new@example.com'
+    });
+  });
 }); 
