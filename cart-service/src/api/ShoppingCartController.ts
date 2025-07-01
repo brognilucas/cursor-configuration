@@ -3,11 +3,15 @@ import { GetShoppingCartSummaryService } from '../application/GetShoppingCartSum
 import { AddItemToShoppingCartService, AddItemInput } from '../application/AddItemToShoppingCartService';
 import { CreateCartService } from '../application/CreateCartService';
 import { AuthenticatedRequest, UserPayload } from './AuthMiddleware';
+import { PostgresShoppingCartRepository } from '../repositories/PostgresShoppingCartRepository';
+import { HttpProductApiClient } from './ProductApiClient';
+import { DataSource } from 'typeorm';
 
 export function ShoppingCartController(
   getSummaryService: GetShoppingCartSummaryService,
   addItemService: AddItemToShoppingCartService,
-  createCartService: CreateCartService
+  createCartService: CreateCartService,
+  dataSource?: DataSource
 ): Router {
   const router = Router();
 
@@ -41,6 +45,36 @@ export function ShoppingCartController(
       res.status(200).send();
     } catch (error) {
       console.error('Error adding item to cart:', error);
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  router.get('/users/:userId/summary', async (req, res) => {
+    const userId = req.params.userId;
+    const repository = new PostgresShoppingCartRepository(dataSource!);
+    const productApiClient = new HttpProductApiClient(process.env.PRODUCT_API_URL!);
+    try {
+      const carts = await repository.findAllByUserId(userId);
+      let totalAmount = 0;
+      const cartSummaries: { cartId: string; total: number }[] = [];
+      for (const cart of carts) {
+        const cartData = await repository.load(cart.id, userId);
+        const items: { productId: string; quantity: number }[] = cartData.items;
+        let cartTotal = 0;
+        if (items.length > 0) {
+          const productIds = items.map((item: { productId: string }) => item.productId);
+          const products: { id: string; name: string; price: number }[] = await productApiClient.fetchProducts(productIds);
+          const productMap = new Map(products.map((p: { id: string; name: string; price: number }) => [p.id, p]));
+          cartTotal = items.reduce((sum: number, item: { productId: string; quantity: number }) => {
+            const product = productMap.get(item.productId);
+            return sum + (product ? product.price * item.quantity : 0);
+          }, 0);
+        }
+        totalAmount += cartTotal;
+        cartSummaries.push({ cartId: cart.id, total: cartTotal });
+      }
+      res.json({ userId, totalAmount, carts: cartSummaries });
+    } catch (error) {
       res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
     }
   });

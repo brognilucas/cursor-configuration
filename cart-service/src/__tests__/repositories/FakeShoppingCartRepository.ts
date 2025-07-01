@@ -31,4 +31,14 @@ export class FakeShoppingCartRepository implements ShoppingCartRepository {
     const items = this._cartItems.get(id) || [];
     return { id, items };
   }
+
+  async findAllByUserId(userId: string): Promise<{ id: string }[]> {
+    const result: { id: string }[] = [];
+    for (const [cartId, uid] of this._carts.entries()) {
+      if (uid === userId) {
+        result.push({ id: cartId });
+      }
+    }
+    return result;
+  }
 } 

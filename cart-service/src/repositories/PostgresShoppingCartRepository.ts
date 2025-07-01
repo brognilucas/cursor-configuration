@@ -85,4 +85,9 @@ export class PostgresShoppingCartRepository implements ShoppingCartRepository {
       items 
     };
   }
+
+  async findAllByUserId(userId: string): Promise<{ id: string }[]> {
+    const carts = await this.cartRepository.find({ where: { user_id: userId } });
+    return carts.map(cart => ({ id: cart.id }));
+  }
 } 
