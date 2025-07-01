@@ -10,5 +10,6 @@ This document is now split into multiple files for clarity and maintainability. 
 - [Frontend Guidelines](./frontend_guidelines.md)
 - [ORM Guidelines](./orm_guidelines.md)
 - [Linting Guidelines](./linting_guidelines.md)
+- [Refactoring Guidelines](./refactoring_guidelines.md)
 
 Each file contains the full content of its respective section as previously found in this document.
