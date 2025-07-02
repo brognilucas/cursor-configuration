@@ -3,15 +3,16 @@ import { GetShoppingCartSummaryService } from '../application/GetShoppingCartSum
 import { AddItemToShoppingCartService, AddItemInput } from '../application/AddItemToShoppingCartService';
 import { CreateCartService } from '../application/CreateCartService';
 import { AuthenticatedRequest, UserPayload } from './AuthMiddleware';
-import { PostgresShoppingCartRepository } from '../repositories/PostgresShoppingCartRepository';
-import { HttpProductApiClient } from './ProductApiClient';
-import { DataSource } from 'typeorm';
+
+import { ShoppingCartRepository } from '../repositories/ShoppingCartRepository';
+import { ProductApiClient } from './ProductApiClient';
 
 export function ShoppingCartController(
   getSummaryService: GetShoppingCartSummaryService,
   addItemService: AddItemToShoppingCartService,
   createCartService: CreateCartService,
-  dataSource?: DataSource
+  repository: ShoppingCartRepository,
+  productApiClient: ProductApiClient
 ): Router {
   const router = Router();
 
@@ -51,8 +52,6 @@ export function ShoppingCartController(
 
   router.get('/users/:userId/summary', async (req, res) => {
     const userId = req.params.userId;
-    const repository = new PostgresShoppingCartRepository(dataSource!);
-    const productApiClient = new HttpProductApiClient(process.env.PRODUCT_API_URL!);
     try {
       const carts = await repository.findAllByUserId(userId);
       let totalAmount = 0;

@@ -13,7 +13,6 @@ import { PasswordHasher } from '../application/PasswordHasher';
 import { JwtGenerator } from '../application/JwtGenerator';
 import { HealthController } from './HealthController';
 import { ProductApiClient } from './ProductApiClient';
-import { DataSource } from 'typeorm';
 
 export function createApp(
   shoppingCartRepository: ShoppingCartRepository,
@@ -21,7 +20,6 @@ export function createApp(
   passwordHasher: PasswordHasher,
   jwtGenerator: JwtGenerator,
   productApiClient: ProductApiClient,
-  dataSource?: DataSource
 ): express.Express {
   const app = express();
   
@@ -40,7 +38,7 @@ export function createApp(
   const signinService = new SigninService(userRepository, passwordHasher, jwtGenerator);
 
   app.use('/health', HealthController());
-  app.use('/shopping-carts', ShoppingCartController(getCartSummaryService, addItemService, createCartService, dataSource));
+  app.use('/shopping-carts', ShoppingCartController(getCartSummaryService, addItemService, createCartService, shoppingCartRepository, productApiClient));
   app.use('/auth', AuthController(signupService, signinService));
 
   return app;

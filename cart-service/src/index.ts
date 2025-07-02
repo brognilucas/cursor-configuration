@@ -18,7 +18,7 @@ async function startServer(): Promise<void> {
   const jwtGenerator = new JwtTokenGenerator();
   const productApiClient = new HttpProductApiClient(productsServiceUrl);
 
-  const app = createApp(shoppingCartRepository, userRepository, passwordHasher, jwtGenerator, productApiClient, AppDataSource);
+  const app = createApp(shoppingCartRepository, userRepository, passwordHasher, jwtGenerator, productApiClient);
 
   app.listen(port, () => {
     console.log(`Cart service running on port ${port}`);
