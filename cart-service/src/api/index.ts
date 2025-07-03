@@ -13,6 +13,7 @@ import { PasswordHasher } from '../application/PasswordHasher';
 import { JwtGenerator } from '../application/JwtGenerator';
 import { HealthController } from './HealthController';
 import { ProductApiClient } from './ProductApiClient';
+import { GetUserCartSummaryService } from '../application/GetUserCartSummaryService';
 
 export function createApp(
   shoppingCartRepository: ShoppingCartRepository,
@@ -32,13 +33,14 @@ export function createApp(
   app.use(express.json());
 
   const getCartSummaryService = new GetShoppingCartSummaryService(shoppingCartRepository, productApiClient);
+  const getUserCartSummaryService = new GetUserCartSummaryService(shoppingCartRepository, productApiClient);
   const createCartService = new CreateCartService(shoppingCartRepository);
   const addItemService = new AddItemToShoppingCartService(shoppingCartRepository);
   const signupService = new SignupService(userRepository, passwordHasher, jwtGenerator);
   const signinService = new SigninService(userRepository, passwordHasher, jwtGenerator);
 
   app.use('/health', HealthController());
-  app.use('/shopping-carts', ShoppingCartController(getCartSummaryService, addItemService, createCartService, shoppingCartRepository, productApiClient));
+  app.use('/shopping-carts', ShoppingCartController(getCartSummaryService, addItemService, createCartService, getUserCartSummaryService));
   app.use('/auth', AuthController(signupService, signinService));
 
   return app;

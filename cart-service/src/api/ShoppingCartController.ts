@@ -4,15 +4,13 @@ import { AddItemToShoppingCartService, AddItemInput } from '../application/AddIt
 import { CreateCartService } from '../application/CreateCartService';
 import { AuthenticatedRequest, UserPayload } from './AuthMiddleware';
 
-import { ShoppingCartRepository } from '../repositories/ShoppingCartRepository';
-import { ProductApiClient } from './ProductApiClient';
+import { GetUserCartSummaryService } from '../application/GetUserCartSummaryService';
 
 export function ShoppingCartController(
   getSummaryService: GetShoppingCartSummaryService,
   addItemService: AddItemToShoppingCartService,
   createCartService: CreateCartService,
-  repository: ShoppingCartRepository,
-  productApiClient: ProductApiClient
+  getUserCartSummaryService: GetUserCartSummaryService
 ): Router {
   const router = Router();
 
@@ -53,26 +51,8 @@ export function ShoppingCartController(
   router.get('/users/:userId/summary', async (req, res) => {
     const userId = req.params.userId;
     try {
-      const carts = await repository.findAllByUserId(userId);
-      let totalAmount = 0;
-      const cartSummaries: { cartId: string; total: number }[] = [];
-      for (const cart of carts) {
-        const cartData = await repository.load(cart.id, userId);
-        const items: { productId: string; quantity: number }[] = cartData.items;
-        let cartTotal = 0;
-        if (items.length > 0) {
-          const productIds = items.map((item: { productId: string }) => item.productId);
-          const products: { id: string; name: string; price: number }[] = await productApiClient.fetchProducts(productIds);
-          const productMap = new Map(products.map((p: { id: string; name: string; price: number }) => [p.id, p]));
-          cartTotal = items.reduce((sum: number, item: { productId: string; quantity: number }) => {
-            const product = productMap.get(item.productId);
-            return sum + (product ? product.price * item.quantity : 0);
-          }, 0);
-        }
-        totalAmount += cartTotal;
-        cartSummaries.push({ cartId: cart.id, total: cartTotal });
-      }
-      res.json({ userId, totalAmount, carts: cartSummaries });
+      const summary = await getUserCartSummaryService.execute(userId);
+      res.json(summary);
     } catch (error) {
       res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
     }

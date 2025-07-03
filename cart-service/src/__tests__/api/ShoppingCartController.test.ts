@@ -8,16 +8,23 @@ import { FakeShoppingCartRepository } from '../repositories/FakeShoppingCartRepo
 import { fakeAuth } from '../fakes/FakeAuthMiddleware';
 import { FakeProductApiClient } from '../fakes/FakeProductApiClient';
 import { AddItemInput } from '../../application/AddItemToShoppingCartService';
+import { GetUserCartSummaryService } from '../../application/GetUserCartSummaryService';
 
 function createTestApp(
   getSummaryService: GetShoppingCartSummaryService,
   addItemService: AddItemToShoppingCartService,
-  createCartService: CreateCartService
+  createCartService: CreateCartService,
+  getUserCartSummaryService: GetUserCartSummaryService
 ): express.Express {
   const app = express();
   app.use(express.json());
   
-  const shoppingCartRouter = ShoppingCartController(getSummaryService, addItemService, createCartService);
+  const shoppingCartRouter = ShoppingCartController(
+    getSummaryService,
+    addItemService,
+    createCartService,
+    getUserCartSummaryService
+  );
   
   app.use('/shopping-carts', fakeAuth({ userId: 'test-user' }), shoppingCartRouter);
 
@@ -29,6 +36,7 @@ describe('ShoppingCart Controller', () => {
   let app: express.Express;
   let productApiClient: FakeProductApiClient;
   let getSummaryService: GetShoppingCartSummaryService;
+  let getUserCartSummaryService: GetUserCartSummaryService;
 
   async function createCart(): Promise<string> {
     const response = await request(app)
@@ -42,10 +50,16 @@ describe('ShoppingCart Controller', () => {
     repository = new FakeShoppingCartRepository();
     productApiClient = new FakeProductApiClient();
     getSummaryService = new GetShoppingCartSummaryService(repository, productApiClient);
+    getUserCartSummaryService = new GetUserCartSummaryService(repository, productApiClient);
     const addItemService = new AddItemToShoppingCartService(repository);
     const createCartService = new CreateCartService(repository);
 
-    app = createTestApp(getSummaryService, addItemService, createCartService);
+    app = createTestApp(
+      getSummaryService,
+      addItemService,
+      createCartService,
+      getUserCartSummaryService
+    );
   });
 
   it('creates a new cart and returns a cartId', async () => {
@@ -188,5 +202,28 @@ describe('ShoppingCart Controller', () => {
     expect(getResponse.body.items).toEqual([
       { productId: '3', quantity: 2 }
     ]);
+  });
+
+  it('returns correct user cart summary for /users/:userId/summary', async () => {
+    productApiClient.addProduct({ id: '1', name: 'Product 1', price: 10 });
+    productApiClient.addProduct({ id: '2', name: 'Product 2', price: 15 });
+    productApiClient.addProduct({ id: '3', name: 'Product 3', price: 20 });
+    const cartId1 = await request(app).post('/shopping-carts/').send().then(res => res.body.cartId);
+    const cartId2 = await request(app).post('/shopping-carts/').send().then(res => res.body.cartId);
+    await request(app).post(`/shopping-carts/${cartId1}/items`).send({ productId: '1', quantity: 2 }); // 2 * 10 = 20
+    await request(app).post(`/shopping-carts/${cartId1}/items`).send({ productId: '2', quantity: 1 }); // 1 * 15 = 15
+    await request(app).post(`/shopping-carts/${cartId2}/items`).send({ productId: '3', quantity: 3 }); // 3 * 20 = 60
+
+    const response = await request(app).get('/shopping-carts/users/test-user/summary');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      userId: 'test-user',
+      totalAmount: 95, // 20 + 15 + 60
+      carts: [
+        { cartId: cartId1, total: 35 },
+        { cartId: cartId2, total: 60 }
+      ]
+    });
   });
 }); 

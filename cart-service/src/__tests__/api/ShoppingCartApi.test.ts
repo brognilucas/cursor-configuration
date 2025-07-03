@@ -8,16 +8,23 @@ import { FakeShoppingCartRepository } from '../repositories/FakeShoppingCartRepo
 import { fakeAuth } from '../fakes/FakeAuthMiddleware';
 import { FakeProductApiClient } from '../fakes/FakeProductApiClient';
 import { AddItemInput } from '../../application/AddItemToShoppingCartService';
+import { GetUserCartSummaryService } from '../../application/GetUserCartSummaryService';
 
 function createTestApp(
   getSummaryService: GetShoppingCartSummaryService,
   addItemService: AddItemToShoppingCartService,
-  createCartService: CreateCartService
+  createCartService: CreateCartService,
+  getUserCartSummaryService: GetUserCartSummaryService
 ): express.Express {
   const app = express();
   app.use(express.json());
 
-  const shoppingCartRouter = ShoppingCartController(getSummaryService, addItemService, createCartService);
+  const shoppingCartRouter = ShoppingCartController(
+    getSummaryService,
+    addItemService,
+    createCartService,
+    getUserCartSummaryService
+  );
   app.use('/shopping-carts', fakeAuth({ userId: 'test-user' }), shoppingCartRouter);
 
   return app;
@@ -27,6 +34,8 @@ describe('ShoppingCart API', () => {
   let repository: FakeShoppingCartRepository;
   let app: express.Express;
   let productApiClient: FakeProductApiClient;
+  let getSummaryService: GetShoppingCartSummaryService;
+  let getUserCartSummaryService: GetUserCartSummaryService;
 
   async function createCart(): Promise<string> {
     const response = await request(app)
@@ -39,11 +48,17 @@ describe('ShoppingCart API', () => {
   beforeEach(() => {
     repository = new FakeShoppingCartRepository();
     productApiClient = new FakeProductApiClient();
-    const getSummaryService = new GetShoppingCartSummaryService(repository, productApiClient);
+    getSummaryService = new GetShoppingCartSummaryService(repository, productApiClient);
+    getUserCartSummaryService = new GetUserCartSummaryService(repository, productApiClient);
     const addItemService = new AddItemToShoppingCartService(repository);
     const createCartService = new CreateCartService(repository);
 
-    app = createTestApp(getSummaryService, addItemService, createCartService);
+    app = createTestApp(
+      getSummaryService,
+      addItemService,
+      createCartService,
+      getUserCartSummaryService
+    );
   });
 
   it('creates a new cart and returns a cartId', async () => {
